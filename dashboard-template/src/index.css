@@ -1,0 +1,17 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Linear+A&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: "Noto Sans Linear A", serif;
+  font-size: 25px;
+  --main-background: #222222;
+}
+
+body {
+  background: var(--main-background);
+}
