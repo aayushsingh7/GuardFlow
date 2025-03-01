@@ -9,9 +9,30 @@
 :root {
   font-family: "Noto Sans Linear A", serif;
   font-size: 25px;
-  --main-background: #222222;
+  --secondary-background: #efefef;
+  --primary-background: #f1f1f1;
 }
 
 body {
-  background: var(--main-background);
+  background: var(--secondary-background);
+}
+
+.app {
+  display: flex;
+}
+
+.main_page {
+  width: 100%;
+  padding: 26px;
+  height: 100dvh;
+  overflow-y: scroll;
+}
+
+.main_page h1 {
+  font-size: 1.6rem;
+}
+
+.wmde-markdown {
+  background-color: #fff !important;
+  color: #000 !important;
 }

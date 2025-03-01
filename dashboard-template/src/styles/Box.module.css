@@ -1,0 +1,52 @@
+.box {
+  padding: 10px;
+  border-radius: 7px;
+  /* box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
+    rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; */
+  border: 2px solid #efefef;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: 0.5s ease-in-out;
+  cursor: pointer;
+}
+
+.box:hover {
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
+    rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  /* border: 2px solid #ffffff; */
+}
+
+.box h4 {
+  font-size: 0.56rem;
+}
+
+.box .danger {
+  font-size: 0.56rem;
+  font-weight: 600;
+  color: red;
+}
+
+.box .safe {
+  font-size: 0.56rem;
+  font-weight: 600;
+  color: rgb(0, 214, 0);
+}
+
+.dec {
+  margin: 0px 5px;
+  font-size: 16px;
+}
+
+.box div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.box div svg {
+  position: relative;
+  top: 3px;
+  color: #c4c4c4;
+}

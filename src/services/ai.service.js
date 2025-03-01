@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GoogleAICacheManager } from "@google/generative-ai/server";
+// import { GoogleAICacheManager } from "@google/generative-ai/server";
+// const cacheManager = new GoogleAICacheManager(aiConfig.api_key);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const model = genAI.getGenerativeModel({
   model: process.env.GEMINI_MODEL,
@@ -32,9 +34,6 @@ const model = genAI.getGenerativeModel({
   `,
 });
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-// const cacheManager = new GoogleAICacheManager(aiConfig.api_key);
-
 class BaseAIService {
   constructor() {
     this.model = model;
@@ -52,7 +51,9 @@ class BaseAIService {
 }
 
 class AIService {
-  constructor() {}
+  constructor() {
+    const ai = new BaseAIService();
+  }
 }
 
 export default AIService;

@@ -5,8 +5,10 @@ import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import cloudinary from "cloudinary";
 import { Server } from "socket.io";
+import connectDB from "./database/connection.js";
 dotenv.config();
 
+connectDB();
 const app = express();
 
 cloudinary.v2.config({

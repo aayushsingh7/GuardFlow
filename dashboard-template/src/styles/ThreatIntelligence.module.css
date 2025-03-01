@@ -1,0 +1,18 @@
+.ai_chat {
+  height: calc(100% - 150px);
+  overflow-y: scroll;
+  margin-top: 30px;
+  border-radius: 10px;
+}
+
+.input {
+  appearance: none;
+  border: none;
+  background: #ffffff;
+  padding: 15px;
+  font-size: 0.8rem;
+  margin-top: 10px;
+  width: 100%;
+  border-radius: 10px;
+  outline: none;
+}

@@ -1,0 +1,15 @@
+/* .section {
+  margin-top: 30px;
+} */
+
+.section h2 {
+  font-size: 0.8rem;
+  margin-bottom: 20px;
+}
+
+.content_grid {
+  display: inline-grid;
+  width: 100%;
+  row-gap: 20px;
+  column-gap: 20px;
+}

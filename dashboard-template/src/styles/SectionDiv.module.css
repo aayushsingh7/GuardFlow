@@ -1,0 +1,16 @@
+.section_div {
+  padding: 15px 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  /* height: 400px; */
+}
+
+.div_content {
+  width: 100%;
+  height: 100%;
+}
+
+.section_div h3 {
+  font-size: 0.6rem;
+  margin-bottom: 20px;
+}
