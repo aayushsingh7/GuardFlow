@@ -12,12 +12,15 @@ import {
 } from "recharts";
 
 const generateData = () =>
-    Array.from({ length: 5 * 60 }, (_, i) => ({
-        minute: `${Math.floor(i / 60)}h ${i % 60}m`,
+    Array.from({ length: 1 * 60 }, (_, i) => ({
+        // Math.floor(i / 60)
+        minute: `00:${i % 60 < 10 ? "0" + i % 60 : i % 60} m`,
         requests: Math.floor(Math.random() * 500), // Example data
     }));
 
+
 const RequestPerMinuteChart = () => {
+    console.log(generateData())
     const [data] = useState(generateData());
     const [zoomDomain, setZoomDomain] = useState({ start: 0, end: data.length });
 
