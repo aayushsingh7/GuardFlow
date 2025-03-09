@@ -1,12 +1,13 @@
 .box {
-  padding: 10px;
+  /* padding: 10px; */
   border-radius: 7px;
   /* box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
     rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; */
   border: 2px solid #efefef;
   margin-top: 5px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: start;
   justify-content: space-between;
   transition: 0.5s ease-in-out;
   cursor: pointer;
@@ -19,34 +20,71 @@
 }
 
 .box h4 {
-  font-size: 0.56rem;
+  font-size: 0.65rem;
 }
 
 .box .danger {
-  font-size: 0.56rem;
+  /* font-size: 0.56rem; */
   font-weight: 600;
   color: red;
 }
 
 .box .safe {
-  font-size: 0.56rem;
+  /* font-size: 0.56rem; */
   font-weight: 600;
   color: rgb(0, 214, 0);
 }
 
-.dec {
-  margin: 0px 5px;
-  font-size: 16px;
-}
-
-.box div {
+.box_header,
+.box_header div {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
 }
 
-.box div svg {
-  position: relative;
-  top: 3px;
-  color: #c4c4c4;
+.box_header {
+  width: 100%;
+  padding: 10px 20px;
+  border-bottom: 2px solid #f1f1f1;
+}
+
+.box_header p {
+  font-size: 0.6rem;
+  color: rgb(220, 0, 0);
+  font-weight: 600;
+  margin-left: 10px;
+}
+
+.box_header button {
+  appearance: none;
+  padding: 5px 10px;
+  color: rgb(0, 123, 255);
+  background: none;
+  outline: none;
+  font-size: 0.6rem;
+  border: none;
+  font-weight: 600;
+}
+
+.detials {
+  transition: 0.5s ease-in-out;
+  width: 100%;
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.6rem;
+}
+
+td,
+th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
 }

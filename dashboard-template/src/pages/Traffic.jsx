@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Page from '../components/Page'
 import Section from "../components/Section"
 import SectionDiv from "../components/SectionDiv"
@@ -6,53 +6,171 @@ import LineChart from "../components/charts/LineChart"
 import AreaChart from '../components/charts/AreaChart'
 import BarChart from '../components/charts/BarChart'
 import PieChart from '../components/charts/PieChart'
+import getStartAndEndTime from '../utils/getStartAndEndTime'
 
 const Traffic = () => {
-    const source = `
-# 🚨 Website Traffic Surge - Potential Security Threat
+    const [routesRequest, setRoutesRequest] = useState([]);
+    const [requestPerMin, setRequestPerMin] = useState([]);
+    const [requestPerHour, setRequestPerHour] = useState([]);
+    // const [scanReports, setScanReports] = useState([])
+    const [aiSummary, setAiSummary] = useState("")
+    const [scanReports, setScanReports] = useState({});
+    const [summary, setSummary] = useState("")
 
-## 📌 Potential Causes
-- **SQL Injection (SQLi)** – Exploiting database vulnerabilities.  
-- **DDoS Attack** – Overloading server resources.  
-- **Credential Stuffing** – Using leaked credentials for unauthorized access.  
+    const [routeData, setRouteData] = useState([])
+    const [selectedRoute, setSelectedRoute] = useState("users")
 
-## 🎯 Attacker Motives
-- **Data Theft** – Stealing sensitive information.  
-- **Service Disruption** – Crippling website functionality.  
-- **Ransom/Extortion** – Demanding payment to stop the attack.  
+    const fetchTrafficOverview = async () => {
+        const { startTime, endTime } = getStartAndEndTime();
+        try {
+            const getData = await fetch(`http://localhost:4000/api/v1/traffic/overview?organizationID=67c8709bc4fc2c40a1b53be2&startTime=${startTime}&endTime=${endTime}`, {
+                method: "GET",
+                credentails: "include",
+                headers: { "Content-Type": "application/json" }
+            })
+            let response = await getData.json();
+            let routeTraffic = {}
+            response.data[0].trafficOverview.map((data, index) => {
+                setRequestPerHour((old) => {
+                    return [...old, { hour: data.hour <= 12 ? `${data.hour} AM` : `${data.hour} PM`, requests: data.totalRequests }]
+                })
 
-## 🔧 Immediate Actions
-- 🔍 **Check logs** for suspicious activity.  
-- 🛡 **Enable WAF (Web Application Firewall).**  
-- 🔒 **Secure database** with proper input sanitization.  
-- 🚫 **Block suspicious traffic** and apply rate limiting.  
+                if ((response.data[0].trafficOverview.length) - 5 <= index) {
 
-⚠ **Take immediate action to prevent further damage!**  
-`
+                    setRequestPerMin((oldData) => {
+                        let newData = Object.entries(data.breakdown).map((detail) => ({
+                            minute: `${data.hour}:${detail[0] < 10 ? "0" + detail[0] : detail[0]} m`,
+                            requests: detail[1]
+                        }))
+                        return [...oldData, ...newData]
+                    })
+                }
+
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const fetchRoutesTraffic = async () => {
+        const { startTime, endTime } = getStartAndEndTime();
+        try {
+            const response = await fetch(`http://localhost:4000/api/v1/traffic/routes-overview?organizationID=67c8709bc4fc2c40a1b53be2&startTime=${startTime}&endTime=${endTime}`, {
+                method: "GET",
+                credentails: "include",
+                headers: { "Content-Type": "application/json" }
+            })
+            let data = await response.json()
+            setRoutesRequest(data.data.map((info) => {
+                return { name: info.route, uv: info.totalRequests, value: info.totalRequests }
+            }))
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    const aiTrafficSummary = async () => {
+        try {
+            const response = await fetch(`http://localhost:4000/api/v1/ai/traffic-summary?organizationID=67c8709bc4fc2c40a1b53be2&startTime=2025-03-05T00:00:00&endTime=2025-03-06T23:59:59`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include"
+            })
+            const data = await response.json();
+            setAiSummary(data.data)
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    const fetchScanResults = async () => {
+        try {
+            const response = await fetch(`http://localhost:4000/api/v1/reports/latest-report?organizationID=67c8709bc4fc2c40a1b53be2&startTime=2025-03-05T00:00:00&endTime=2025-03-07T23:59:59`, {
+                method: "GET",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" }
+            })
+            const data = await response.json();
+            data.data.vulnerabilities.map((pk) => {
+                if (scanReports[pk.packageName]) {
+                    scanReports[pk.packageName].push({
+                        package: pk.version,
+                        title: pk.title,
+                        severity: pk.severity,
+                        fixedIn: pk.fixedIn,
+                    })
+                } else {
+                    scanReports[pk.packageName] = [{
+                        package: pk.version,
+                        title: pk.title,
+                        severity: pk.severity,
+                        fixedIn: pk.fixedIn,
+                    }]
+                }
+            })
+
+            setSummary(data.data.summary)
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    const getRouteDetail = async () => {
+        const { startTime, endTime } = getStartAndEndTime();
+        try {
+            const response = await fetch(`http://localhost:4000/api/v1/traffic/route?organizationID=67c8709bc4fc2c40a1b53be2&startTime=${startTime}&endTime=${endTime}&route=${selectedRoute}`, {
+                method: "GET",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" }
+            })
+            const data = await response.json();
+            setRouteData(data.data[0])
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+
+    useEffect(() => {
+        getRouteDetail()
+    }, [selectedRoute])
+
+    useEffect(() => {
+        fetchTrafficOverview();
+        fetchRoutesTraffic();
+        // aiTrafficSummary()
+        // fetchScanResults();
+    }, [])
+
+    useEffect(() => {
+        console.log(requestPerMin)
+    }, [requestPerMin])
+
     return (
         <Page>
             <h1>Traffic Analysis</h1>
             <Section cols={1} heading={"Overall Traffic Overview"}>
                 <SectionDiv heading={"Request Per Minute (5 hrs)"}>
-                    <LineChart />
+                    <LineChart data={requestPerMin} />
                 </SectionDiv>
 
                 <SectionDiv heading={"Request Per Hour (24 Hrs)"}>
-                    <AreaChart />
+                    <AreaChart data={requestPerHour} />
                 </SectionDiv>
             </Section>
 
 
-            <Section cols={2} heading={"Traffic Per Routes"}>
+            <Section cols={1} heading={"Traffic Per Routes"}>
                 <SectionDiv heading={"Traffic Per Routes (Today)"}>
-                    <BarChart />
+                    <BarChart data={routesRequest} />
                 </SectionDiv>
 
                 <SectionDiv heading={"Traffic Contribution Per Routes"}>
                     {/* < /> */}
-                    <PieChart />
+                    <PieChart data={routesRequest} />
                 </SectionDiv>
             </Section>
+
 
         </Page>
     )
