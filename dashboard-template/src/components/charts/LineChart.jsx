@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     LineChart as Chart,
     Line,
@@ -20,6 +20,11 @@ import {
 
 
 const RequestPerMinuteChart = ({ data }) => {
+
+    useEffect(() => {
+        console.log("DATA CHANGED", data)
+    }, [data])
+
     const [zoomDomain, setZoomDomain] = useState({ start: 0, end: data.length });
 
     const handleZoom = (e) => {

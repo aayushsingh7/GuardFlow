@@ -1,0 +1,33 @@
+.profile_div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px;
+  height: calc(100dvh - 250px);
+}
+
+.box {
+  background: #ffffff;
+  /* padding: 40px; */
+  border-radius: 5px;
+  width: 90%;
+  max-width: 500px;
+  /* padding: 10px; */
+}
+
+.feild {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.6rem;
+  padding: 15px;
+  border-bottom: 2px solid #e8e8e8;
+}
+
+.feild_name {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #797979;
+}
+
+/* .feild_value {
+} */

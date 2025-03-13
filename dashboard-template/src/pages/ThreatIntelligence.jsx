@@ -1,84 +1,120 @@
-import React, { useState } from 'react'
-import Page from '../components/Page'
-import Section from '../components/Section'
-import SectionDiv from '../components/SectionDiv'
-import MarkdownPreview from "@uiw/react-markdown-preview"
-import styles from "../styles/ThreatIntelligence.module.css"
+import React, { useEffect, useRef, useState } from 'react';
+import Page from '../components/Page';
+import Section from '../components/Section';
+import SectionDiv from '../components/SectionDiv';
+import MarkdownPreview from '@uiw/react-markdown-preview';
+import styles from '../styles/ThreatIntelligence.module.css';
+import { useAppContext } from '../context/ContextAPI';
 
 const ThreatIntelligence = (e) => {
-    const [message, setMessages] = useState([{
-        role: "assistant", msg: `
-## Hey There!, how can i help you today?
-- Do you want me summerize today's tarffic behavior?
-- Do you want me to compare traffic data?
-- Do you want me to analysze vulnerability in your packages?
-- Do you want me to give you any suggestion?
-
-### Please feel free to ask me about anything🙌.
-`}])
-    const [userPrompt, setUserPrompt] = useState("")
+    const { currHourTrafficData, organization } = useAppContext();
+    const messageRef = useRef();
+    const [loading, setLoading] = useState(false)
+    const [messages, setMessages] = useState([
+        {
+            role: 'assistant',
+            msg: `
+## Hello! How can I assist you today?
+- Would you like a **summary of today's traffic patterns**?
+- Do you need a **comparison of traffic data**?
+- Should I **analyze vulnerabilities in your packages**?
+- Are you looking for **recommendations or insights**?
+    
+### Feel free to ask me anything. I'm here to help! 🚀
+`,
+        },
+    ]);
+    const [userPrompt, setUserPrompt] = useState('');
 
     const sendMessage = async (e) => {
-        if (e.key == "Enter") {
-            console.log("function triggered")
+        setLoading(true)
+        if (e.key === 'Enter') {
+            console.log('function triggered');
             let prompt = userPrompt;
-            setMessages((messages) => {
-                return [...messages, {
-                    role: "user",
-                    msg: userPrompt
-                }]
-            })
-            setUserPrompt("")
+            setMessages((messages) => [
+                ...messages,
+                {
+                    role: 'user',
+                    msg: userPrompt,
+                },
+            ]);
+            setUserPrompt('');
             try {
-                const response = await fetch(`http://localhost:4000/api/v1/ai/chat`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/chat`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify({
-                        userPrompt: prompt,
-                        startTime: "2025-03-05T00:00:00",
-                        endTime: "2025-03-05T12:00:00",
-                        organizationID: "67c8709bc4fc2c40a1b53be2",
-                        hour: 4,
-                        route: "users"
-                    })
+                        userPrompt: `
+${prompt}
 
-                })
-                let data = await response.json()
-                setMessages((messages) => {
-                    return [...messages, {
-                        role: "assistant",
-                        msg: data.data
-                    }]
-                })
+### Current Hour Traffic Data so Far
+${JSON.stringify(currHourTrafficData)}
+`,
+                        organizationID: organization._id,
+                    }),
+                });
+                let data = await response.json();
+                setMessages((messages) => [
+                    ...messages,
+                    {
+                        role: 'assistant',
+                        msg: data.data,
+                    },
+                ]);
             } catch (err) {
-                console.log(err)
+                console.log(err);
             }
         }
-    }
+        setLoading(false)
+    };
+
+    useEffect(() => {
+        if (messageRef.current) {
+            messageRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages.length]);
 
     return (
         <Page>
             <h1>Threat Intelligence</h1>
             <div className={styles.ai_chat}>
-                {/* <div className={styles.chat}> */}
-
-                <div data-color-mode="light">
-                    {
-                        message.map((message) => {
-                            return <MarkdownPreview source={message.msg} style={{ padding: "15px", border: message.role == "user" ? "4px solid blue" : "4px solid red" }} />
-                        })
-                    }
-                    {/* <MarkdownPreview source={o} style={{ padding: "15px" }} /> */}
-                    {/* <MarkdownPreview source={e} style={{ padding: "15px" }} /> */}
-                    {/* <MarkdownPreview source={source} style={{ padding: "15px" }} /> */}
+                <div data-color-mode='light'>
+                    {messages.map((message, index) => {
+                        if (message.role === 'user') {
+                            return (
+                                <div key={index} className={styles.user_message}>
+                                    <div>{message.msg}</div>
+                                </div>
+                            );
+                        } else {
+                            return (
+                                <MarkdownPreview
+                                    key={index}
+                                    source={message.msg}
+                                    style={{
+                                        padding: '15px',
+                                        marginTop: '10px',
+                                        borderRadius: '10px',
+                                        borderBottomLeftRadius: '0px',
+                                    }}
+                                />
+                            );
+                        }
+                    })}
+                    {loading && <div className={styles.ai_typing}><p className='loader_2'></p> Bruno is thinking...</div>}
+                    <div ref={messageRef}></div>
                 </div>
-
-                {/* </div> */}
             </div>
-            <input className={styles.input} placeholder='Ask Me Anything...' onKeyDown={(e) => sendMessage(e)} onChange={(e) => setUserPrompt(e.target.value)} value={userPrompt} />
+            <input
+                className={styles.input}
+                placeholder='Ask Me Anything...'
+                onKeyDown={(e) => sendMessage(e)}
+                onChange={(e) => setUserPrompt(e.target.value)}
+                value={userPrompt}
+            />
         </Page>
-    )
-}
+    );
+};
 
-export default ThreatIntelligence
+export default ThreatIntelligence;

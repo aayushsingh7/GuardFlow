@@ -7,8 +7,10 @@ import AreaChart from '../components/charts/AreaChart'
 import BarChart from '../components/charts/BarChart'
 import PieChart from '../components/charts/PieChart'
 import getStartAndEndTime from '../utils/getStartAndEndTime'
+import { useAppContext } from '../context/ContextAPI'
 
 const Traffic = () => {
+    const { organization } = useAppContext()
     const [routesRequest, setRoutesRequest] = useState([]);
     const [requestPerMin, setRequestPerMin] = useState([]);
     const [requestPerHour, setRequestPerHour] = useState([]);
@@ -16,14 +18,13 @@ const Traffic = () => {
     const [aiSummary, setAiSummary] = useState("")
     const [scanReports, setScanReports] = useState({});
     const [summary, setSummary] = useState("")
-
     const [routeData, setRouteData] = useState([])
     const [selectedRoute, setSelectedRoute] = useState("users")
 
     const fetchTrafficOverview = async () => {
         const { startTime, endTime } = getStartAndEndTime();
         try {
-            const getData = await fetch(`http://localhost:4000/api/v1/traffic/overview?organizationID=67c8709bc4fc2c40a1b53be2&startTime=${startTime}&endTime=${endTime}`, {
+            const getData = await fetch(`${import.meta.env.VITE_API_URL}/traffic/overview?organizationID=${organization._id}&startTime=${startTime}&endTime=${endTime}`, {
                 method: "GET",
                 credentails: "include",
                 headers: { "Content-Type": "application/json" }
@@ -55,7 +56,7 @@ const Traffic = () => {
     const fetchRoutesTraffic = async () => {
         const { startTime, endTime } = getStartAndEndTime();
         try {
-            const response = await fetch(`http://localhost:4000/api/v1/traffic/routes-overview?organizationID=67c8709bc4fc2c40a1b53be2&startTime=${startTime}&endTime=${endTime}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/traffic/routes-overview?organizationID=${organization._id}&startTime=${startTime}&endTime=${endTime}`, {
                 method: "GET",
                 credentails: "include",
                 headers: { "Content-Type": "application/json" }
@@ -71,7 +72,7 @@ const Traffic = () => {
 
     const aiTrafficSummary = async () => {
         try {
-            const response = await fetch(`http://localhost:4000/api/v1/ai/traffic-summary?organizationID=67c8709bc4fc2c40a1b53be2&startTime=2025-03-05T00:00:00&endTime=2025-03-06T23:59:59`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/traffic-summary?organizationID=${organization._id}&startTime=2025-03-05T00:00:00&endTime=2025-03-06T23:59:59`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include"
@@ -85,7 +86,7 @@ const Traffic = () => {
 
     const fetchScanResults = async () => {
         try {
-            const response = await fetch(`http://localhost:4000/api/v1/reports/latest-report?organizationID=67c8709bc4fc2c40a1b53be2&startTime=2025-03-05T00:00:00&endTime=2025-03-07T23:59:59`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/reports/latest-report?organizationID=${organization._id}&startTime=2025-03-05T00:00:00&endTime=2025-03-07T23:59:59`, {
                 method: "GET",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" }
@@ -118,13 +119,14 @@ const Traffic = () => {
     const getRouteDetail = async () => {
         const { startTime, endTime } = getStartAndEndTime();
         try {
-            const response = await fetch(`http://localhost:4000/api/v1/traffic/route?organizationID=67c8709bc4fc2c40a1b53be2&startTime=${startTime}&endTime=${endTime}&route=${selectedRoute}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/traffic/route?organizationID=${organization._id}&startTime=${startTime}&endTime=${endTime}&route=${selectedRoute}`, {
                 method: "GET",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" }
             })
             const data = await response.json();
             setRouteData(data.data[0])
+            console.log(data.data[0])
         } catch (err) {
             console.log(err)
         }

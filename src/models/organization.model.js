@@ -3,9 +3,10 @@ import { Schema, model } from "mongoose";
 const organizationSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
-    username: { type: String, required: true, unique: true, trim: true },
+    email: { type: String, required: true, trim: true, unique: true },
     password: { type: String, trim: true },
     sysConfigs: {},
+    location: { type: String },
   },
   { timestamps: true }
 );

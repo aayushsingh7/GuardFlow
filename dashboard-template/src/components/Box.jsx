@@ -25,7 +25,7 @@ const Box = ({ packageName, data }) => {
                         <th>Fixed Version</th>
                     </tr>
                     {data.map((detail) => {
-                        console.log("DETAILS IN HERE", detail)
+                        // console.log("DETAILS IN HERE", detail)
                         return (
                             <tr>
                                 <td>{detail.package}</td>

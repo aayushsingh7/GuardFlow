@@ -48,8 +48,8 @@ today's date: ${new Date().toISOString().split("T")[0]}
             startTime: parsedPrompt.start_time,
             endTime: parsedPrompt.end_time,
             organizationID,
-            hour,
-            route,
+            hour: parsedPrompt.hour,
+            route: parsedPrompt.route,
           });
         } else if (this.reportService[parsedPrompt.function]) {
           response = await this.reportService[parsedPrompt.function]({

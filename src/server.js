@@ -11,6 +11,7 @@ import aiRoutes from "./routes/ai.routes.js";
 import ReportService from "./services/report.service.js";
 import reportRoutes from "./routes/report.routes.js";
 import ApiTrafficService from "./services/apiTraffic.service.js";
+import orgRoutes from "./routes/organization.routes.js";
 dotenv.config();
 
 connectDB();
@@ -30,6 +31,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use("/api/v1/traffic", apiRoutes);
 app.use("/api/v1/ai", aiRoutes);
 app.use("/api/v1/reports", reportRoutes);
+app.use("/api/v1/orgs", orgRoutes);
 let scan_result = {};
 
 app.get("/", (req, res) => {
@@ -50,19 +52,27 @@ function getCurrentHour() {
   return new Date().getHours() % 24;
 }
 
+function getCurrentMinute() {
+  return new Date().getMinutes() % 60;
+}
+
+console.log(getCurrentMinute());
+
 let reqPerMin = {};
 let reqPerMinCount = 0;
 let reqPerRoutes = new Map();
-let curMinute = 0;
+let routesReqPerMin = new Map();
+let curMinute = getCurrentMinute();
 let curHour = getCurrentHour();
-let authDetails = {};
+let interval = false;
 
 io.on("connection", (socket) => {
-  socket.on("setup", (details) => {
-    // console.log(details);
-    authDetails = details;
-    console.log(authDetails);
-  });
+  socket.emit("auth", process.env.ORGANIZATION_ID);
+  // socket.on("setup", (details) => {
+  //   // console.log(details);
+  //   authDetails = details;
+  //   console.log(authDetails);
+  // });
   // monitor api request
   // socket.on("req_received", (reqDetails) => {
   //   let mainRoute = reqDetails.pathComponents[0];
@@ -93,24 +103,42 @@ io.on("connection", (socket) => {
       });
     }
 
+    if (!routesReqPerMin.has(mainRoute)) {
+      routesReqPerMin.set(mainRoute, {
+        totalRequest: 0,
+        GET: 0,
+        POST: 0,
+        DELETE: 0,
+        PUT: 0,
+      });
+    }
+
     // Get the existing data for the route
     let routeData = reqPerRoutes.get(mainRoute);
+    let routeDataPerMin = routesReqPerMin.get(mainRoute);
 
     // Update total request count and specific method count
     routeData.totalRequest += 1;
+    routeDataPerMin.totalRequest += 1;
 
     if (method in routeData) {
       routeData[method] += 1;
     }
 
+    if (method in routeDataPerMin) {
+      routeDataPerMin[method] += 1;
+    }
+
     // Save updated data back to the Map
     reqPerRoutes.set(mainRoute, routeData);
+    console.log(routeDataPerMin);
+    routesReqPerMin.set(mainRoute, routeDataPerMin);
 
     // console.log(
     //   `New request received on ${curMinute}: ${reqPerMinCount}`,
     //   reqPerRoutes
     // );
-    console.log("This is Object.fromEntries", Object.fromEntries(reqPerRoutes));
+    // console.log("This is Object.fromEntries", Object.fromEntries(reqPerRoutes));
   });
 
   // request packages & dependencies scan
@@ -123,7 +151,7 @@ io.on("connection", (socket) => {
     scan_result = results;
     socket.emit("push_scan_results", results);
     let data = {
-      organization: authDetails.credentials.organizationID,
+      organization: process.env.ORGANIZATION_ID,
       ...results,
     };
     // console.log(data);
@@ -138,58 +166,70 @@ io.on("connection", (socket) => {
   socket.on("scan_ports_results", (result) => {
     socket.emit("port_scan_results_received", result);
   });
-
-  function triggerPerMinute() {
-    socket.emit("req_per_minute", {
-      minute: `00:${curMinute < 10 ? "0" + curMinute : curMinute}`,
-      requests: reqPerMinCount,
-    });
-
-    reqPerMin[curMinute++] = reqPerMinCount;
-    console.log(reqPerMin, reqPerRoutes);
-    reqPerMinCount = 0;
-    if (curMinute > 59) {
-      // empty the reqPerMin object & curMinute to 0 (start of new hour)
-      triggerPerHour();
-    }
-
-    setTimeout(triggerPerMinute, 600000);
-  }
-
-  function formatHour(hour) {
-    const period = hour < 12 ? "AM" : "PM";
-    const formattedHour = hour % 12 || 12;
-    return `${formattedHour} ${period}`;
-  }
-
-  async function triggerPerHour() {
-    let totalRequestPerHour = Object.values(reqPerMin).reduce(
-      (sum, cur) => sum + cur,
-      0
-    );
-    const trafficSummary = {
-      organization: authDetails.credentials.organizationID,
-      hour: curHour,
-      totalRequests: totalRequestPerHour,
-      breakdown: reqPerMin,
-      trafficPerRoutes: Object.fromEntries(reqPerRoutes),
-    };
-
-    console.log(trafficSummary, reqPerRoutes);
-    socket.emit("req_per_hour", {
-      hour: formatHour(curHour),
-      requests: totalRequestPerHour,
-    });
-
-    reqPerMin = {};
-    reqPerRoutes = new Map();
-    curMinute = curMinute % 60;
-    curHour = (curHour + 1) % 24;
-    await apiTrafficService.addTraffic(trafficSummary);
-  }
-
-  setTimeout(triggerPerMinute, 600000);
 });
+
+function triggerPerMinute(socket) {
+  console.log("function triggger of minite ", curMinute);
+  socket.emit("req_per_minute", {
+    time: `${curHour < 10 ? `0${curHour}` : curHour}:${
+      curMinute < 10 ? "0" + curMinute : curMinute
+    }`,
+    requests: reqPerMinCount || 10,
+    minute: curMinute,
+    hour: curHour,
+    routesTraffic: Object.fromEntries(routesReqPerMin),
+  });
+
+  reqPerMin[curMinute++] = reqPerMinCount;
+  reqPerMinCount = 0;
+  if (curMinute > 59) {
+    // empty the reqPerMin object & curMinute to 0 (start of new hour)
+    triggerPerHour(socket);
+  }
+
+  routesReqPerMin = new Map();
+  // setTimeout(triggerPerMinute, 60000);
+}
+
+function formatHour(hour) {
+  const period = hour < 12 ? "AM" : "PM";
+  const formattedHour = hour % 12 || 12;
+  return `${formattedHour} ${period}`;
+}
+
+async function triggerPerHour(socket) {
+  let totalRequestPerHour = Object.values(reqPerMin).reduce(
+    (sum, cur) => sum + cur,
+    0
+  );
+  const trafficSummary = {
+    organization: process.env.ORGANIZATION_ID,
+    hour: curHour,
+    totalRequests: totalRequestPerHour,
+    breakdown: reqPerMin,
+    trafficPerRoutes: Object.fromEntries(reqPerRoutes),
+  };
+
+  console.log(trafficSummary, reqPerRoutes);
+  socket.emit("req_per_hour", {
+    hour: formatHour(curHour),
+    requests: totalRequestPerHour,
+  });
+
+  reqPerMin = {};
+  reqPerRoutes = new Map();
+  curMinute = curMinute % 60;
+  curHour = (curHour + 1) % 24;
+  await apiTrafficService.addTraffic(trafficSummary);
+}
+
+let intervalStarted = false;
+if (!intervalStarted) {
+  intervalStarted = true;
+  setInterval(() => {
+    triggerPerMinute(io);
+  }, 60000);
+}
 
 httpServer.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);

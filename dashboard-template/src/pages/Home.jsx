@@ -1,46 +1,52 @@
 import React, { useEffect, useState } from 'react'
 import Page from '../components/Page'
 // import styles from "../styles/Home.module.css"
-import Section from '../components/Section'
-import AreaChart from '../components/charts/AreaChart'
-import SectionDiv from '../components/SectionDiv'
-import BarChart from '../components/charts/BarChart'
 import MarkdownPreview from "@uiw/react-markdown-preview"
-import LineChart from '../components/charts/LineChart'
 import Box from '../components/Box'
+import Section from '../components/Section'
+import SectionDiv from '../components/SectionDiv'
+import AreaChart from '../components/charts/AreaChart'
+import BarChart from '../components/charts/BarChart'
+import LineChart from '../components/charts/LineChart'
 import getStartAndEndTime from '../utils/getStartAndEndTime'
+import { useAppContext } from '../context/ContextAPI'
 
 const Home = () => {
-
+    const { requestPerMin, requestPerHour, setRequestPerHour, setRequestPerMin, organization, setRequestPerMinFunc, setRequestPerHourFunc } = useAppContext()
     const [routesRequest, setRoutesRequest] = useState([]);
-    const [requestPerMin, setRequestPerMin] = useState([]);
-    const [requestPerHour, setRequestPerHour] = useState([]);
+    // const [requestPerMin, setRequestPerMin] = useState([]);
+    // const [requestPerHour, setRequestPerHour] = useState([]);
     const [aiSummary, setAiSummary] = useState("")
     const [scanReports, setScanReports] = useState({});
     const [summary, setSummary] = useState("")
 
+    const [scanReportsLoading, setScanReportsLoading] = useState(true)
+    const [aiSummaryLoading, setAiSummaryLoading] = useState(true)
+
     const fetchTrafficOverview = async () => {
         const { startTime, endTime } = getStartAndEndTime();
         try {
-            const getData = await fetch(`http://localhost:4000/api/v1/traffic/overview?organizationID=67c8709bc4fc2c40a1b53be2&startTime=${startTime}&endTime=${endTime}`, {
+            const getData = await fetch(`${import.meta.env.VITE_API_URL}/traffic/overview?organizationID=${organization._id}&startTime=${startTime}&endTime=${endTime}`, {
                 method: "GET",
                 credentails: "include",
                 headers: { "Content-Type": "application/json" }
             })
             let response = await getData.json();
-            let routeTraffic = {}
-            response.data[0].trafficOverview.map((data) => {
-                setRequestPerHour((old) => {
-                    return [...old, { hour: data.hour <= 12 ? `${data.hour} AM` : `${data.hour} PM`, requests: data.totalRequests }]
-                })
-            })
-            const lastData = response.data[0].trafficOverview[response.data[0].trafficOverview.length - 1];
+            if (response.data[0]?.trafficOverview) {
+                let formattedData = response.data[0]?.trafficOverview.map((data) => ({
+                    hour: data.hour <= 12 ? `${data.hour} AM` : `${data.hour} PM`,
+                    requests: data.totalRequests
+                }));
 
-            setRequestPerMin(Object.entries(lastData.breakdown).map((detail) => ({
-                minute: `00:${detail[0] < 10 ? "0" + detail[0] : detail[0]} m`,
-                requests: detail[1]
-            })))
-
+                const lastData = response.data[0]?.trafficOverview[response.data[0]?.trafficOverview.length - 1];
+                const formattedMinData = Object.entries(lastData.breakdown).map((detail) => ({
+                    minute: `${lastData.hour < 10 ? `0${lastData.hour}` : lastData.hour}:${detail[0] < 10 ? "0" + detail[0] : detail[0]} m`,
+                    requests: detail[1]
+                }))
+                setRequestPerMinFunc(formattedMinData, "new")
+                setRequestPerHourFunc(formattedData, "new")
+                console.log(formattedData, lastData)
+            }
         } catch (error) {
             console.log(error)
         }
@@ -49,7 +55,7 @@ const Home = () => {
     const fetchRoutesTraffic = async () => {
         const { startTime, endTime } = getStartAndEndTime()
         try {
-            const response = await fetch(`http://localhost:4000/api/v1/traffic/routes-overview?organizationID=67c8709bc4fc2c40a1b53be2&startTime=${startTime}&endTime=${endTime}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/traffic/routes-overview?organizationID=${organization._id}&startTime=${startTime}&endTime=${endTime}`, {
                 method: "GET",
                 credentails: "include",
                 headers: { "Content-Type": "application/json" }
@@ -64,9 +70,10 @@ const Home = () => {
     }
 
     const aiTrafficSummary = async () => {
+        setAiSummaryLoading(true)
         const { startTime, endTime } = getStartAndEndTime()
         try {
-            const response = await fetch(`http://localhost:4000/api/v1/ai/traffic-summary?organizationID=67c8709bc4fc2c40a1b53be2&startTime=${startTime}&endTime=${endTime}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/traffic-summary?organizationID=${organization._id}&startTime=${startTime}&endTime=${endTime}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include"
@@ -76,11 +83,13 @@ const Home = () => {
         } catch (err) {
             console.log(err)
         }
+        setAiSummaryLoading(false)
     }
 
     const fetchScanResults = async () => {
+        setScanReportsLoading(true)
         try {
-            const response = await fetch(`http://localhost:4000/api/v1/reports/latest-report?organizationID=67c8709bc4fc2c40a1b53be2&startTime=2025-03-05T00:00:00&endTime=2025-03-07T23:59:59`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/reports/latest-report?organizationID=${organization._id}&startTime=2025-03-05T00:00:00&endTime=2025-03-07T23:59:59`, {
                 method: "GET",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" }
@@ -108,23 +117,31 @@ const Home = () => {
         } catch (err) {
             console.log(err)
         }
+        setScanReportsLoading(false)
     }
 
 
     useEffect(() => {
-        fetchTrafficOverview();
-        fetchRoutesTraffic();
-        aiTrafficSummary()
-        fetchScanResults();
-    }, [])
+        if (organization._id) {
+            fetchTrafficOverview();
+            fetchRoutesTraffic();
+            // aiTrafficSummary()
+            // fetchScanResults();
+        }
+    }, [organization._id])
+
+
     return (
         <Page>
             <h1>Overview</h1>
             <Section heading={"AI Overview"} cols={1}>
                 <SectionDiv>
-                    <div data-color-mode="light" style={{ paddingBottom: "15px" }}>
-                        <MarkdownPreview source={aiSummary.slice(5, -3)} />
-                    </div>
+                    {
+                        aiSummaryLoading ? <div className="loading_container"><div className='loader'></div></div> :
+                            <div data-color-mode="light" style={{ paddingBottom: "15px" }}>
+                                <MarkdownPreview source={aiSummary.slice(5, -3)} />
+                            </div>
+                    }
                 </SectionDiv>
             </Section>
 
@@ -144,11 +161,11 @@ const Home = () => {
 
             <Section heading={"Scan Overview"} cols={1}>
                 <SectionDiv heading={summary}>
-
-                    {Object.entries(scanReports)?.map((obj) => {
-                        // console.log("THIS IS OBJECT", obj[0], obj[1])
-                        return <Box packageName={obj[0]} data={obj[1]} />
-                    })}
+                    {
+                        scanReportsLoading ? <div className="loading_container"><div className='loader'></div></div> : Object.entries(scanReports)?.map((obj) => {
+                            // console.log("THIS IS OBJECT", obj[0], obj[1])
+                            return <Box packageName={obj[0]} data={obj[1]} />
+                        })}
                 </SectionDiv>
             </Section>
         </Page>

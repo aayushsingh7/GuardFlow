@@ -79,11 +79,13 @@ You are an **AI Security Agent** responsible for analyzing, comparing, and summa
 **Summary:**  
 [Brief security summary]
 
-### **Detailed Analysis**
-| Metric/Route  | Value/Observation |
-|--------------|-----------------|
-| Example 1   | Data value      |
-| Example 2   | Data value      |
+### **Detailed Analysis [example format] **
+| Route          | GET Requests | POST Requests | PUT Requests | DELETE Requests | Total Requests | 2XX Success | 4XX Client Errors | 5XX Server Errors | Avg. Response Time (ms) |
+|--------------|-------------|--------------|-------------|---------------|---------------|------------|----------------|----------------|---------------------|
+| \`/api/users\`  | 120         | 80           | 30          | 10            | 240           | 220        | 15             | 5              | 120                 |
+| \`/api/orders\` | 300         | 150          | 60          | 20            | 530           | 500        | 25             | 5              | 200                 |
+| \`/api/products\` | 200      | 100          | 40          | 15            | 355           | 340        | 10             | 5              | 180                 |
+| \`/api/payments\` | 50       | 300          | 20          | 5             | 375           | 360        | 10             | 5              | 250                 |
 
 ### **Anomalies & Threats Identified**
 [List any security risks, or state *None detected*]
