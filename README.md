@@ -2,6 +2,8 @@
 
 An intelligent AI-driven system that monitors, analyzes, and protects your API traffic in real time—featuring a visual dashboard, advanced vulnerability scanning, proactive threat detection, and an AI chatbot for traffic summaries, scanning reports, and more.
 
+<br>
+
 ## 1. Features
 
 - **Real-time API Traffic Monitoring**: Gain deep insights into your API activity through an intuitive, user-friendly dashboard.
@@ -9,6 +11,8 @@ An intelligent AI-driven system that monitors, analyzes, and protects your API t
 - **Comprehensive Dependency & Package Scanning**: Automatically analyze project dependencies and npm packages for vulnerabilities.
 - **AI-Powered Insights & Recommendations**: Generate intelligent summaries, comparisons, and optimization strategies for your API traffic.
 - **Proactive Threat & Vulnerability Detection** – Leverage AI to identify and mitigate security threats in real time.
+
+--- 
 
 <br>
 
@@ -26,6 +30,7 @@ Our system is designed for **maximum privacy and control**:
 ---
 
 <br>
+
 
 ## 3. Project Setup
 
@@ -231,9 +236,11 @@ You’re now ready to **monitor, analyze, and secure your API traffic with AI-po
 
 ---
 
-## API Endpoints
+<br>
 
-### 1. AI Services
+## 4. API Endpoints
+
+### 4.1. AI Services
 
 <details>
 <summary>Response Structure</summary>
@@ -248,7 +255,7 @@ You’re now ready to **monitor, analyze, and secure your API traffic with AI-po
 
 </details>
 
-#### 1.1 **Get Traffic & Scan Summary**
+#### 4.1.1 **Get Traffic & Scan Summary**
 
 > Provides a quick summary of traffic data and scans to check for anomalies and vulnerabilities.
 
@@ -256,7 +263,7 @@ You’re now ready to **monitor, analyze, and secure your API traffic with AI-po
 GET: "http://localhost:4000/api/v1/ai/traffic-summary?organizationID=${organizationID}&startTime=2025-03-05T00:00:00&endTime=2025-03-06T23:59:59"
 ```
 
-#### 1.2 **Get Detailed Analysis of Traffic and Scan Results + AI Chat**
+#### 4.1.2 **Get Detailed Analysis of Traffic and Scan Results + AI Chat**
 
 > Provides a detailed breakdown of traffic data, scan results, and an AI chatbot for better interactions and problem-solving.
 
@@ -275,9 +282,9 @@ PUT: "http://localhost:4000/api/v1/ai/chat"
 
 <br>
 
-### 2. API Traffic Service
+### 4.2. API Traffic Service
 
-#### 2.1 **Get Traffic Overview**
+#### 4.2.1 **Get Traffic Overview**
 
 > Provides an overview of traffic data, including `hour`, `totalRequest`, and `breakdown`.
 
@@ -312,7 +319,7 @@ GET: "http://localhost:4000/api/v1/traffic/overview?organizationID=organizationI
 
 </details>
 
-#### 2.2 **Get Routes Traffic Overview**
+#### 4.2.2 **Get Routes Traffic Overview**
 
 > Provides the total number of requests received by each route in the given time period.
 
@@ -349,7 +356,7 @@ GET: "http://localhost:4000/api/v1/traffic/routes-overview?organizationID=organi
 
 </details>
 
-#### 2.3 Get Route Detailed Traffic
+#### 4.2.3 Get Route Detailed Traffic
 
 > Provide a certain route's detailed data from duration startTime & endTime
 
@@ -397,9 +404,9 @@ GET:"http://localhost:4000/api/v1/traffic/route?organizationID=organizationID&st
 
 <br>
 
-### 3. Scan Report Services
+### 4.3. Scan Report Services
 
-#### 3.1 Get Latest Scan Report
+#### 4.3.1 Get Latest Scan Report
 
 > Get latest scan report starting from startTime to endTime
 
@@ -464,7 +471,7 @@ GET:"http://localhost:4000/api/v1/reports/latest-report?organizationID=ORGANIZAT
 
 </details>
 
-#### 3.2 Get Scan Reports
+#### 4.3.2 Get Scan Reports
 
 > Get all the scan reports between startTime & endTime
 
@@ -544,6 +551,6 @@ GET:"http://localhost:4000/api/v1/reports?organizationID=ORGANIZATION_ID&startTi
 
 <br>
 
-## 4. Contributing
+## 5. Contributing
 
 Contributions are welcome! Feel free to submit pull requests or open issues 🙌.
