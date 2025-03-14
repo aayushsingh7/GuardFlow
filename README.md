@@ -11,6 +11,7 @@ An intelligent AI-driven system that monitors, analyzes, and protects your API t
 - **Comprehensive Dependency & Package Scanning**: Automatically analyze project dependencies and npm packages for vulnerabilities.
 - **AI-Powered Insights & Recommendations**: Generate intelligent summaries, comparisons, and optimization strategies for your API traffic.
 - **Proactive Threat & Vulnerability Detection** – Leverage AI to identify and mitigate security threats in real time.
+- **Use Your Local/Any AI**, user can use gemini, openAI or their own offline AI model providing organization with options and security.
 
 ---
 
@@ -55,7 +56,7 @@ Create a `.env` file in the project root and add the required variables.
 ```env
 PORT = 4000
 
-ORGANIZATION_ID = YOUR_ORGANIZATION_ID (received after logging/register into the dashboard)
+ORGANIZATION_ID = YOUR_ORGANIZATION_ID // (received after logging/register into the dashboard)
 
 SECRET_KEY = YOUR_SECKET_KEY
 
@@ -63,7 +64,9 @@ DB_URL = YOUR_MONGODB_URL
 
 NODE_ENV="development"
 
-AI_MODEL = AI_MODEL (google, openai, your own model)
+AI_PROVIDER = "gemini" // ("gemini", "openai", "custom")
+
+AI_MODEL = AI_MODEL // ("gemini-2.0-flash", "local-ai", etc)
 
 AI_API_KEY = YOUR_AI_API_KEY
 

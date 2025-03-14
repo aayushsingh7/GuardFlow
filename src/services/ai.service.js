@@ -2,13 +2,10 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import ApiTrafficService from "./apiTraffic.service.js";
 import ReportService from "./report.service.js";
 import dotenv from "dotenv";
+import AiInstance from "../config/aiConfig.js";
 dotenv.config();
-// import { GoogleAICacheManager } from "@google/generative-ai/server";
-const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY);
 
-const model = genAI.getGenerativeModel({
-  model: process.env.AI_MODEL,
-  systemInstruction: `
+const SUMMARY_PROMPT = `
 You are an AI security analyst. Your task is to analyze and summarize the given traffic data and scan results concisely, **strictly based on the provided data**.
 
 ### **Objective:**  
@@ -35,13 +32,9 @@ You are an AI security analyst. Your task is to analyze and summarize the given 
 > **Note:** If no vulnerabilities or major anomalies are detected, state:  
 > \`"No critical security issues detected based on the provided data."\`
 \`\`\`
-`,
-});
+`;
 
-// Chat-specific AI model with interactive capabilities
-const chatModel = genAI.getGenerativeModel({
-  model: process.env.AI_MODEL,
-  systemInstruction: `
+const AI_CHAT_PROMPT = `
 You are an **AI Security Agent** responsible for analyzing, comparing, and summarizing data based on user requirements. Your primary objective is to monitor for **anomalies, security threats, and vulnerabilities** while providing actionable threat intelligence.
 
 ## **Responsibilities**
@@ -98,19 +91,24 @@ You are an **AI Security Agent** responsible for analyzing, comparing, and summa
 [Optional: Additional insights]
 
 *Ensure the response is formatted exactly as above.*
-`,
-});
+`;
 
 class BaseAIService {
   constructor() {
-    this.model = model;
-    this.chatModel = chatModel;
+    this.ai = new AiInstance();
   }
 
   async generateResponse(prompt) {
     try {
-      const result = await this.model.generateContent(prompt);
-      return result.response.text();
+      const result = await this.ai.generateContent({
+        provider: process.env.AI_PROVIDER,
+        apiKey: process.env.AI_API_KEY,
+        model: process.env.AI_MODEL,
+        prompt: prompt,
+        systemPrompt: SUMMARY_PROMPT,
+        temperature: 0.7,
+      });
+      return result;
     } catch (error) {
       logger.error("Error generating AI response:", error);
       throw new CustomError("Failed to generate AI response", 500);
@@ -119,12 +117,16 @@ class BaseAIService {
 
   async generateChatResponse(message) {
     try {
-      const result = await this.chatModel.generateContent(message);
-      console.log(
-        "+++++++++++++++Response received inside the generateChatResponse+++++++++++++++++",
-        result
-      );
-      return result.response.text();
+      const result = await this.ai.generateContent({
+        provider: process.env.AI_PROVIDER,
+        apiKey: process.env.AI_API_KEY,
+        model: process.env.AI_MODEL,
+        prompt: message,
+        systemPrompt: AI_CHAT_PROMPT,
+        temperature: 0.7,
+        maxTokens: 7000,
+      });
+      return result;
     } catch (error) {
       logger.error("Error generating AI response:", error);
       throw new CustomError("Failed to generate AI response", 500);
