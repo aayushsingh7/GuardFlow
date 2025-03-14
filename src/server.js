@@ -67,7 +67,7 @@ let curHour = getCurrentHour();
 let interval = false;
 
 io.on("connection", (socket) => {
-  socket.emit("auth", process.env.ORGANIZATION_ID);
+  // socket.emit("auth", process.env.ORGANIZATION_ID);
   // socket.on("setup", (details) => {
   //   // console.log(details);
   //   authDetails = details;

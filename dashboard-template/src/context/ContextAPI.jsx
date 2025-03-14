@@ -17,9 +17,9 @@ export const AppProvider = ({ children }) => {
 
   // Traffic Page
   const [requestOverFiveHours, setRequestOverFiveHours] = useState([]);
-  const [routesReqestsData, setRoutesRequestsData] = useState([]);
+  const [routesRequests, setRoutesRequests] = useState([{ name: "", uv: "", value: "" }]);
 
-  const [curHourTraffic, setCurHourTraffic] = useState({});
+  // const [curHourTraffic, setCurHourTraffic] = useState({});
 
   // organization
   const [organization, setOrganization] = useState({});
@@ -69,19 +69,26 @@ export const AppProvider = ({ children }) => {
         });
         return newData;
       });
+
+
     }
   };
 
   const setRequestOverFiveHoursFunc = (data, type = "new") => {
+    console.log("setRequestOverFiveHoursFunc()", requestPerMin.length)
     if (type == "new") {
-      setRequestOverFiveHours([...data.slice(requestPerMin.length), ...requestPerMin]);
+      setRequestOverFiveHours(data);
     } else {
       setRequestOverFiveHours((oldData) => {
         let newData = [...oldData];
         if (newData.length > 300) {
           newData.shift();
         }
-        newData.push(data);
+        console.log("-------------- setRequestOverFiveHoursFunc() -----------------", data)
+        newData.push({
+          minute: data.time,
+          requests: data.requests,
+        });
         return newData;
       });
     }
@@ -102,6 +109,45 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const setRoutesRequestsFunc = (data, type = "new") => {
+    if (type == "new") {
+      setRoutesRequests(data);
+    } else {
+      setRoutesRequests((oldData) => {
+        let newData = [...oldData];
+        console.log("setRoutesRequestsFunc()", data);
+
+        for (let [route, methods] of Object.entries(data)) {
+          let found = false;
+
+          newData = newData.map((routeData) => {
+            if (routeData.name === route) {
+              found = true;
+              return {
+                ...routeData,
+                uv: routeData.uv + methods.totalRequest,
+                value: routeData.value + methods.totalRequest,
+              };
+            }
+            return routeData;
+          });
+
+          // If the route was not found, add it as a new entry
+          if (!found) {
+            newData.push({
+              name: route,
+              uv: methods.totalRequest,
+              value: methods.totalRequest,
+            });
+          }
+        }
+
+        return newData;
+      });
+    }
+  };
+
+
   return (
     <AppContext.Provider
       value={{
@@ -111,6 +157,7 @@ export const AppProvider = ({ children }) => {
         setCurrHourTrafficData,
         organization,
         requestPerMin,
+        routesRequests,
         setRequestPerMin,
         requestPerHour,
         setRequestPerHour,
@@ -118,6 +165,8 @@ export const AppProvider = ({ children }) => {
         setRequestPerMinFunc,
         setRequestOverFiveHoursFunc,
         setRequestPerHourFunc,
+        requestOverFiveHours,
+        setRoutesRequestsFunc
       }}
     >
       {children}

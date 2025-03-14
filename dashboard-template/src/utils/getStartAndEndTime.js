@@ -10,7 +10,7 @@ function getStartAndEndTime() {
   const startTime = `${year}-${month}-${day}T00:00:00`;
   const endTime = `${year}-${month}-${day}T23:59:59`;
 
-  return { startTime, endTime };
+  return { startTime: "2025-03-13T00:00:00", endTime: "2025-03-13T23:59:59" };
 }
 
 export default getStartAndEndTime;

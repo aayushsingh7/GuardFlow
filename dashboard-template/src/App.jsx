@@ -14,13 +14,19 @@ import Profile from './pages/Profile.jsx'
 import Verify from './layouts/Verify.jsx'
 
 const App = () => {
-  const { setVerify, verify, setRequestPerMinFunc, setRequestOverFiveHoursFunc, currHourTrafficData } = useAppContext()
+  const { setVerify, verify, setRequestPerMinFunc, setRequestOverFiveHoursFunc, currHourTrafficData, setRoutesRequestsFunc } = useAppContext()
   useEffect(() => {
     const socket = io(`${import.meta.env.VITE_SOCKET_URL}`)
     socket.on("req_per_minute", (data) => {
 
       // if(data)
       setRequestPerMinFunc(data, "old")
+      setRequestOverFiveHoursFunc(data, "old")
+
+      // { name: info.route, uv: info.totalRequests, value: info.totalRequests }
+      setRoutesRequestsFunc(data.routesTraffic, "old")
+
+
       // console.log(data)
       // console.log(currHourTrafficData)
       // setRequestPerHourFunc(data)

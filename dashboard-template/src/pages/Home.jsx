@@ -12,8 +12,8 @@ import getStartAndEndTime from '../utils/getStartAndEndTime'
 import { useAppContext } from '../context/ContextAPI'
 
 const Home = () => {
-    const { requestPerMin, requestPerHour, setRequestPerHour, setRequestPerMin, organization, setRequestPerMinFunc, setRequestPerHourFunc } = useAppContext()
-    const [routesRequest, setRoutesRequest] = useState([]);
+    const { requestPerMin, requestPerHour, setRequestPerHour, setRequestPerMin, organization, setRequestPerMinFunc, setRequestPerHourFunc, setRoutesRequestsFunc, routesRequests } = useAppContext()
+    // const [routesRequest, setRoutesRequest] = useState([]);
     // const [requestPerMin, setRequestPerMin] = useState([]);
     // const [requestPerHour, setRequestPerHour] = useState([]);
     const [aiSummary, setAiSummary] = useState("")
@@ -61,9 +61,10 @@ const Home = () => {
                 headers: { "Content-Type": "application/json" }
             })
             let data = await response.json()
-            setRoutesRequest(data.data.map((info) => {
+            let routesData = data.data.map((info) => {
                 return { name: info.route, uv: info.totalRequests }
-            }))
+            })
+            setRoutesRequestsFunc(routesData, "new")
         } catch (err) {
             console.log(err)
         }
@@ -151,7 +152,7 @@ const Home = () => {
                         {requestPerMin && <LineChart data={requestPerMin} />}
                     </SectionDiv>
                     <SectionDiv heading={"Most Used Routes (Today)"}>
-                        {routesRequest && <BarChart data={routesRequest} />}
+                        {routesRequests && <BarChart data={routesRequests} />}
                     </SectionDiv>
                 </Section>
                 <SectionDiv heading={"Request Per Hour (Today)"}>

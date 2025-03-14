@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import formatResponse from "./formatResponse.js";
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY);
 
 const model = genAI.getGenerativeModel({
-  model: process.env.GEMINI_MODEL,
+  model: process.env.AI_MODEL,
   //   systemInstruction: `
   // You are an AI agent responsible for interpreting a user's natural language request and selecting the appropriate traffic analytics function. Your task involves:
 

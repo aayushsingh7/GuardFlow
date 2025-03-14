@@ -4,10 +4,10 @@ import ReportService from "./report.service.js";
 import dotenv from "dotenv";
 dotenv.config();
 // import { GoogleAICacheManager } from "@google/generative-ai/server";
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY);
 
 const model = genAI.getGenerativeModel({
-  model: process.env.GEMINI_MODEL,
+  model: process.env.AI_MODEL,
   systemInstruction: `
 You are an AI security analyst. Your task is to analyze and summarize the given traffic data and scan results concisely, **strictly based on the provided data**.
 
@@ -40,7 +40,7 @@ You are an AI security analyst. Your task is to analyze and summarize the given 
 
 // Chat-specific AI model with interactive capabilities
 const chatModel = genAI.getGenerativeModel({
-  model: process.env.GEMINI_MODEL,
+  model: process.env.AI_MODEL,
   systemInstruction: `
 You are an **AI Security Agent** responsible for analyzing, comparing, and summarizing data based on user requirements. Your primary objective is to monitor for **anomalies, security threats, and vulnerabilities** while providing actionable threat intelligence.
 
