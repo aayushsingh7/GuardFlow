@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 const authenticateJWT = (req, res, next) => {
-  const token = req.cookies.earnmore;
+  const token = req.cookies.guardflow;
 
   if (!token) {
     return res.status(403).send({ success: false, message: "Access denied." });

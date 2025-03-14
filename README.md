@@ -12,7 +12,7 @@ An intelligent AI-driven system that monitors, analyzes, and protects your API t
 - **AI-Powered Insights & Recommendations**: Generate intelligent summaries, comparisons, and optimization strategies for your API traffic.
 - **Proactive Threat & Vulnerability Detection** – Leverage AI to identify and mitigate security threats in real time.
 
---- 
+---
 
 <br>
 
@@ -30,7 +30,6 @@ Our system is designed for **maximum privacy and control**:
 ---
 
 <br>
-
 
 ## 3. Project Setup
 
@@ -70,7 +69,28 @@ AI_API_KEY = YOUR_AI_API_KEY
 
 ```
 
-### 4️⃣ Getting the ORGANIZATION_ID
+### 4️⃣ (IMP) Setting Up Frontend & Getting ORGANIZATION_ID
+
+#### 3.4.1. Navigate to dashboard folder & Install Dependencies
+
+```sh
+cd dashboard-template
+npm install
+```
+
+#### 3.4.2. Start the development server
+
+```sh
+npm run dev
+```
+
+#### 3.4.3. Login/Register your organization
+
+![](https://res.cloudinary.com/dvk80x6fi/image/upload/v1741943253/Screenshot_1148_snqlbo_24b7c0.png)
+
+#### 3.4.4. Copy and Paste the `Organization ID` from your profile into the `.env` ORGANIZATION_ID.
+
+![](https://res.cloudinary.com/dvk80x6fi/image/upload/v1741944444/profile_huwaoa.jpg)
 
 ---
 

@@ -12,12 +12,14 @@ class OrganizationControllers {
   async register(req, res) {
     try {
       let { org, token } = await this.orgService.register(req.body);
+
       resres
-        .cookie("earnmore", token, {
+        .cookie("guardflow", token, {
           sameSite: "none",
           httpOnly: true,
-          secure: false,
+          secure: true,
           maxAge: 15 * 24 * 60 * 60 * 1000,
+          path: "/",
         })
         .status(201)
         .send({
@@ -37,11 +39,12 @@ class OrganizationControllers {
     try {
       let { org, token } = await this.orgService.login(req.body);
       res
-        .cookie("earnmore", token, {
+        .cookie("guardflow", token, {
           sameSite: "none",
           httpOnly: true,
-          secure: false,
+          secure: true,
           maxAge: 15 * 24 * 60 * 60 * 1000,
+          path: "/",
         })
         .status(200)
         .send({
