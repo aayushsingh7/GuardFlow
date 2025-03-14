@@ -56,36 +56,21 @@ function getCurrentMinute() {
   return new Date().getMinutes() % 60;
 }
 
-console.log(getCurrentMinute());
-
 let reqPerMin = {};
 let reqPerMinCount = 0;
 let reqPerRoutes = new Map();
 let routesReqPerMin = new Map();
 let curMinute = getCurrentMinute();
 let curHour = getCurrentHour();
-let interval = false;
 
 io.on("connection", (socket) => {
-  // socket.emit("auth", process.env.ORGANIZATION_ID);
-  // socket.on("setup", (details) => {
-  //   // console.log(details);
-  //   authDetails = details;
-  //   console.log(authDetails);
-  // });
-  // monitor api request
-  // socket.on("req_received", (reqDetails) => {
-  //   let mainRoute = reqDetails.pathComponents[0];
-  //   let method = reqDetails.method;
-  //   reqPerMinCount++;
-  //   // reqPerRoutes.set(mainRoute, (reqPerRoutes.get(mainRoute) || 0) + 1);
-  //  if(method == "GET") {
-  //   reqPerRoutes.set(mainRoute, {
-  //     totalRequest:(reqPerRoutes.get(mainRoute).totalRequest || 0 ) + 1,
-  //  })
-  //  }else if(method:"")
-  //   console.log(`New request recieve on ${curMinute}: ${reqPerMinCount}`);
-  // });
+  socket.emit("current_hour_data", {
+    organization: process.env.ORGANIZATION_ID,
+    hour: curHour,
+    totalRequests: Object.values(reqPerMin).reduce((sum, cur) => sum + cur, 0),
+    breakdown: reqPerMin,
+    trafficPerRoutes: Object.fromEntries(reqPerRoutes),
+  });
 
   socket.on("req_received", (reqDetails) => {
     let mainRoute = reqDetails.pathComponents[0] || "/";
@@ -133,12 +118,6 @@ io.on("connection", (socket) => {
     reqPerRoutes.set(mainRoute, routeData);
     console.log(routeDataPerMin);
     routesReqPerMin.set(mainRoute, routeDataPerMin);
-
-    // console.log(
-    //   `New request received on ${curMinute}: ${reqPerMinCount}`,
-    //   reqPerRoutes
-    // );
-    // console.log("This is Object.fromEntries", Object.fromEntries(reqPerRoutes));
   });
 
   // request packages & dependencies scan
@@ -154,7 +133,6 @@ io.on("connection", (socket) => {
       organization: process.env.ORGANIZATION_ID,
       ...results,
     };
-    // console.log(data);
     await reportService.saveScanReport(data);
   });
 
@@ -188,7 +166,6 @@ function triggerPerMinute(socket) {
   }
 
   routesReqPerMin = new Map();
-  // setTimeout(triggerPerMinute, 60000);
 }
 
 function formatHour(hour) {
@@ -210,7 +187,7 @@ async function triggerPerHour(socket) {
     trafficPerRoutes: Object.fromEntries(reqPerRoutes),
   };
 
-  console.log(trafficSummary, reqPerRoutes);
+  // console.log(trafficSummary, reqPerRoutes);
   socket.emit("req_per_hour", {
     hour: formatHour(curHour),
     requests: totalRequestPerHour,

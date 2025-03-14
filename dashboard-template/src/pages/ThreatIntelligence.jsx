@@ -5,6 +5,7 @@ import SectionDiv from '../components/SectionDiv';
 import MarkdownPreview from '@uiw/react-markdown-preview';
 import styles from '../styles/ThreatIntelligence.module.css';
 import { useAppContext } from '../context/ContextAPI';
+import Notification from '../utils/notification';
 
 const ThreatIntelligence = (e) => {
     const { currHourTrafficData, organization } = useAppContext();
@@ -63,7 +64,7 @@ ${JSON.stringify(currHourTrafficData)}
                     },
                 ]);
             } catch (err) {
-                console.log(err);
+                Notification.error("Oops! cannot send messages to ai at this moment, try again later")
             }
         }
         setLoading(false)
@@ -83,14 +84,14 @@ ${JSON.stringify(currHourTrafficData)}
                     {messages.map((message, index) => {
                         if (message.role === 'user') {
                             return (
-                                <div key={index} className={styles.user_message}>
+                                <div key={`${message.role}-${index}`} className={styles.user_message}>
                                     <div>{message.msg}</div>
                                 </div>
                             );
                         } else {
                             return (
                                 <MarkdownPreview
-                                    key={index}
+                                    key={`${message.role}-${index}`}
                                     source={message.msg}
                                     style={{
                                         padding: '15px',

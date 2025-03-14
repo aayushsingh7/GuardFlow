@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import styles from "../styles/LoginAndRegister.module.css"
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/ContextAPI'
+import Notification from "../utils/notification"
 
 const Login = () => {
     const navigate = useNavigate()
@@ -22,14 +23,16 @@ const Login = () => {
                 })
             })
             const data = await response.json();
-            console.log(data)
             if (response.ok) {
+                Notification.success("Logged In Successfully!")
                 setOrganization(data.org)
                 navigate("/profile")
+            } else {
+                Notification.error(data.message)
             }
 
         } catch (err) {
-            console.log(err)
+            Notification.error("Oops! something went wrong, try again later")
         }
         setLoading(false)
     }

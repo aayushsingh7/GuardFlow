@@ -30,7 +30,10 @@ export const AppProvider = ({ children }) => {
     // console.log("setRequestPerMinFunc()", requestPerMin);
     if (type === "new") {
       // console.log("inside the new one");
-      setRequestPerMin(data);
+      setRequestPerMin((oldData) => {
+        console.log("insdie the setRequestOverFiveHours()", [...oldData.slice(data.length), ...data])
+        return [...data.slice(oldData.length), ...oldData]
+      });
     } else {
       setCurrHourTrafficData((oldData) => {
         // console.log(oldData.totalRequests, data.requests)
@@ -75,9 +78,11 @@ export const AppProvider = ({ children }) => {
   };
 
   const setRequestOverFiveHoursFunc = (data, type = "new") => {
-    console.log("setRequestOverFiveHoursFunc()", requestPerMin.length)
     if (type == "new") {
-      setRequestOverFiveHours(data);
+      setRequestOverFiveHours((oldData) => {
+        console.log("insdie the setRequestOverFiveHours()", [...oldData.slice(data.length), ...data])
+        return [...data.slice(oldData.length), ...oldData]
+      });
     } else {
       setRequestOverFiveHours((oldData) => {
         let newData = [...oldData];

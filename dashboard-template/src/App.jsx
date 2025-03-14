@@ -17,8 +17,21 @@ const App = () => {
   const { setVerify, verify, setRequestPerMinFunc, setRequestOverFiveHoursFunc, currHourTrafficData, setRoutesRequestsFunc } = useAppContext()
   useEffect(() => {
     const socket = io(`${import.meta.env.VITE_SOCKET_URL}`)
-    socket.on("req_per_minute", (data) => {
+    let currMinData = []
+    socket.on("current_hour_data", (data) => {
+      for (let minData of Object.entries(data.breakdown)) {
+        currMinData.push({
+          minute: `${data.hour < 10 ? `0${data.hour}` : data.hour}:${minData[0] < 10 ? "0" + minData[0] : minData[0]} m`,
+          requests: minData[1]
+        })
+      }
 
+      setRequestPerMinFunc(currMinData, "new")
+      setRequestOverFiveHoursFunc(currMinData, "new")
+      setRoutesRequestsFunc(data.trafficPerRoutes, "old")
+    })
+    // setRequestPerMinFunc(data, "new")
+    socket.on("req_per_minute", (data) => {
       // if(data)
       setRequestPerMinFunc(data, "old")
       setRequestOverFiveHoursFunc(data, "old")

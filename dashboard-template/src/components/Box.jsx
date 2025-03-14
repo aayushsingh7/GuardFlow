@@ -18,33 +18,26 @@ const Box = ({ packageName, data }) => {
 
             <div className={styles.detials} style={{ overflow: "hidden", height: show ? "auto" : "0px" }}>
                 <table>
-                    <tr>
+                    <tbody>
                         <th>Package Version</th>
                         <th>Vulnerability</th>
                         <th>severity</th>
                         <th>Fixed Version</th>
-                    </tr>
-                    {data.map((detail) => {
+                    </tbody>
+                    {data.map((detail, index) => {
                         // console.log("DETAILS IN HERE", detail)
                         return (
-                            <tr>
-                                <td>{detail.package}</td>
+                            <tbody>
+                                <td key={index}>{detail.package}</td>
                                 <td>{detail.title}</td>
                                 <td>{detail.severity}</td>
                                 <td>{detail.fixedIn[0]}</td>
-                            </tr>
+                            </tbody>
                         )
                     })}
 
                 </table>
             </div>
-
-
-            {/* <div>
-                <span className={styles.danger}>{dangerVersion}</span>
-                <span className={styles.dec}><FaLongArrowAltRight /></span>
-                <span className={styles.safe}>{secureVersion}</span>
-            </div> */}
         </div>
     )
 }

@@ -20,7 +20,6 @@ class AIController {
         data: response,
       });
     } catch (err) {
-      console.log(err);
       res
         .status(500)
         .send({ success: false, message: "Internal Server Error" });
@@ -85,7 +84,7 @@ today's date: ${new Date().toISOString().split("T")[0]}
           .send({ success: false, message: "Bad Request, please try again" });
       }
     } catch (err) {
-      console.log(err);
+
       res
         .status(500)
         .send({ success: false, message: "Internal Server Error" });

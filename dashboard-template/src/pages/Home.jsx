@@ -8,14 +8,12 @@ import SectionDiv from '../components/SectionDiv'
 import AreaChart from '../components/charts/AreaChart'
 import BarChart from '../components/charts/BarChart'
 import LineChart from '../components/charts/LineChart'
-import getStartAndEndTime from '../utils/getStartAndEndTime'
 import { useAppContext } from '../context/ContextAPI'
+import getStartAndEndTime from '../utils/getStartAndEndTime'
+import Notification from '../utils/notification'
 
 const Home = () => {
     const { requestPerMin, requestPerHour, setRequestPerHour, setRequestPerMin, organization, setRequestPerMinFunc, setRequestPerHourFunc, setRoutesRequestsFunc, routesRequests } = useAppContext()
-    // const [routesRequest, setRoutesRequest] = useState([]);
-    // const [requestPerMin, setRequestPerMin] = useState([]);
-    // const [requestPerHour, setRequestPerHour] = useState([]);
     const [aiSummary, setAiSummary] = useState("")
     const [scanReports, setScanReports] = useState({});
     const [summary, setSummary] = useState("")
@@ -45,10 +43,9 @@ const Home = () => {
                 }))
                 setRequestPerMinFunc(formattedMinData, "new")
                 setRequestPerHourFunc(formattedData, "new")
-                console.log(formattedData, lastData)
             }
         } catch (error) {
-            console.log(error)
+            Notification.error("Oops! cannot fetch traffic overview at this moment")
         }
     }
 
@@ -66,7 +63,7 @@ const Home = () => {
             })
             setRoutesRequestsFunc(routesData, "new")
         } catch (err) {
-            console.log(err)
+            Notification.error("Oops! cannot fetch routes traffic at this moment")
         }
     }
 
@@ -82,7 +79,7 @@ const Home = () => {
             const data = await response.json();
             setAiSummary(data.data)
         } catch (err) {
-            console.log(err)
+            Notification.error("Oops! cannot fetch ai summary at this moment")
         }
         setAiSummaryLoading(false)
     }
@@ -116,7 +113,7 @@ const Home = () => {
 
             setSummary(data.data.summary)
         } catch (err) {
-            console.log(err)
+            Notification.error("Oops! something went wrong, try again later")
         }
         setScanReportsLoading(false)
     }
@@ -126,8 +123,8 @@ const Home = () => {
         if (organization._id) {
             fetchTrafficOverview();
             fetchRoutesTraffic();
-            // aiTrafficSummary()
-            // fetchScanResults();
+            aiTrafficSummary()
+            fetchScanResults();
         }
     }, [organization._id])
 

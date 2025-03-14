@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useAppContext } from '../context/ContextAPI'
 import { useNavigate } from 'react-router-dom'
+import Notification from '../utils/notification'
 
 const Verify = () => {
     const navigate = useNavigate()
@@ -14,18 +15,17 @@ const Verify = () => {
                 headers: { "Content-Type": "application/json" }
             })
             const data = await response.json()
-            console.log(response)
             if (response.status == 200) {
                 setOrganization(data.org)
                 navigate("/")
             } else {
                 navigate("/login")
             }
-            setVerify(false)
         } catch (err) {
-            console.log(err)
+            Notification.error("Oops! something went wrong, try again later")
             navigate("/login")
         }
+        setVerify(false)
     }
 
     useEffect(() => {

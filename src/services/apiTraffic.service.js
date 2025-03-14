@@ -455,14 +455,111 @@ class ApiTrafficService {
   //     throw err;
   //   }
   // }
+  // async getRouteTraffic(query) {
+  //   const { organizationID, startTime, endTime, route } = query;
+
+  //   try {
+  //     // Convert startTime and endTime to Date objects if they are strings
+  //     const start = new Date(startTime);
+  //     const end = new Date(endTime);
+
+  //     // Pipeline to aggregate traffic data for a specific route by date with method breakdown
+  //     const pipeline = [
+  //       // Match documents within the time range and for the specified organization
+  //       {
+  //         $match: {
+  //           organization: new mongoose.Types.ObjectId(organizationID),
+  //           createdAt: { $gte: start, $lte: end },
+  //           [`trafficPerRoutes.${route}`]: { $exists: true },
+  //         },
+  //       },
+  //       // Add a date field (without time) for grouping
+  //       {
+  //         $addFields: {
+  //           dateOnly: {
+  //             $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+  //           },
+  //         },
+  //       },
+  //       // Group by date to sum up the requests for each day
+  //       {
+  //         $group: {
+  //           _id: "$dateOnly",
+  //           totalRequest: {
+  //             $sum: { $getField: { field: "totalRequest", input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] } } },
+  //           },
+  //           get: {
+  //             $sum: { $getField: { field: "GET", input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] } } },
+  //           },
+  //           post: {
+  //             $sum: { $getField: { field: "POST", input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] } } },
+  //           },
+  //           delete: {
+  //             $sum: { $getField: { field: "DELETE", input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] } } },
+  //           },
+  //           put: {
+  //             $sum: { $getField: { field: "PUT", input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] } } },
+  //           },
+  //           createdAt: { $first: "$createdAt" },
+  //         },
+  //       },
+  //       // Group all results together to create the structure
+  //       {
+  //         $group: {
+  //           _id: null,
+  //           route: { $first: { $literal: route } },
+  //           totalRequest: { $sum: "$totalRequest" },
+  //           detailedData: {
+  //             $push: {
+  //               date: "$_id",
+  //               totalRequest: "$totalRequest",
+  //               get: "$get",
+  //               post: "$post",
+  //               delete: "$delete",
+  //               put: "$put"
+  //             },
+  //           },
+  //         },
+  //       },
+  //       // Format the final output
+  //       {
+  //         $project: {
+  //           _id: 0,
+  //           route: 1,
+  //           totalRequest: 1,
+  //           detailedData: 1,
+  //         },
+  //       },
+  //     ];
+
+  //     // Execute the aggregation pipeline
+  //     const result = await ApiTraffic.aggregate(pipeline);
+
+  //     // If no data found, return empty result with the route
+  //     if (result.length === 0) {
+  //       return [
+  //         {
+  //           route,
+  //           totalRequest: 0,
+  //           detailedData: [],
+  //         },
+  //       ];
+  //     }
+
+  //     return result;
+  //   } catch (err) {
+  //     throw err;
+  //   }
+  // }
+
   async getRouteTraffic(query) {
     const { organizationID, startTime, endTime, route } = query;
-  
+
     try {
       // Convert startTime and endTime to Date objects if they are strings
       const start = new Date(startTime);
       const end = new Date(endTime);
-  
+
       // Pipeline to aggregate traffic data for a specific route by date with method breakdown
       const pipeline = [
         // Match documents within the time range and for the specified organization
@@ -486,19 +583,44 @@ class ApiTrafficService {
           $group: {
             _id: "$dateOnly",
             totalRequest: {
-              $sum: { $getField: { field: "totalRequest", input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] } } },
+              $sum: {
+                $getField: {
+                  field: "totalRequest",
+                  input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] },
+                },
+              },
             },
             get: {
-              $sum: { $getField: { field: "GET", input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] } } },
+              $sum: {
+                $getField: {
+                  field: "GET",
+                  input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] },
+                },
+              },
             },
             post: {
-              $sum: { $getField: { field: "POST", input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] } } },
+              $sum: {
+                $getField: {
+                  field: "POST",
+                  input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] },
+                },
+              },
             },
             delete: {
-              $sum: { $getField: { field: "DELETE", input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] } } },
+              $sum: {
+                $getField: {
+                  field: "DELETE",
+                  input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] },
+                },
+              },
             },
             put: {
-              $sum: { $getField: { field: "PUT", input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] } } },
+              $sum: {
+                $getField: {
+                  field: "PUT",
+                  input: { $ifNull: [`$trafficPerRoutes.${route}`, {}] },
+                },
+              },
             },
             createdAt: { $first: "$createdAt" },
           },
@@ -509,6 +631,10 @@ class ApiTrafficService {
             _id: null,
             route: { $first: { $literal: route } },
             totalRequest: { $sum: "$totalRequest" },
+            totalGet: { $sum: "$get" },
+            totalPost: { $sum: "$post" },
+            totalPut: { $sum: "$put" },
+            totalDelete: { $sum: "$delete" },
             detailedData: {
               $push: {
                 date: "$_id",
@@ -516,7 +642,7 @@ class ApiTrafficService {
                 get: "$get",
                 post: "$post",
                 delete: "$delete",
-                put: "$put"
+                put: "$put",
               },
             },
           },
@@ -527,30 +653,39 @@ class ApiTrafficService {
             _id: 0,
             route: 1,
             totalRequest: 1,
+            totalGet: 1,
+            totalPost: 1,
+            totalPut: 1,
+            totalDelete: 1,
             detailedData: 1,
           },
         },
       ];
-  
+
       // Execute the aggregation pipeline
       const result = await ApiTraffic.aggregate(pipeline);
-  
+
       // If no data found, return empty result with the route
       if (result.length === 0) {
         return [
           {
             route,
             totalRequest: 0,
+            totalGet: 0,
+            totalPost: 0,
+            totalPut: 0,
+            totalDelete: 0,
             detailedData: [],
           },
         ];
       }
-  
+
       return result;
     } catch (err) {
       throw err;
     }
   }
+
   async getWeekTrafficOverview(query) {
     const { organizationID, startTime, endTime } = query;
 

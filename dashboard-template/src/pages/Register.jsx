@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import styles from "../styles/LoginAndRegister.module.css"
 import { Link } from 'react-router-dom'
 import { useAppContext } from '../context/ContextAPI'
+import Notification from '../utils/notification'
 
 const Register = () => {
     const { setOrganization } = useAppContext()
@@ -26,10 +27,13 @@ const Register = () => {
             if (response.ok) {
                 setOrganization(data.org)
                 navigate("/profile")
+                Notification.success("Registered Successfully!")
+            } else {
+                Notification.error(data.message)
             }
 
         } catch (err) {
-            console.log(err)
+            Notification.error("Oops! something went wrong, try again later")
         }
         setLoading(false)
     }

@@ -1,25 +1,23 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import AreaChart from '../components/charts/AreaChart'
+import BarChart from '../components/charts/BarChart'
+import LineChart from "../components/charts/LineChart"
+import MultiBarChart from '../components/charts/MultiBarChart'
+import PieChart from '../components/charts/PieChart'
+import DropDown from '../components/DropDown'
 import Page from '../components/Page'
 import Section from "../components/Section"
 import SectionDiv from "../components/SectionDiv"
-import LineChart from "../components/charts/LineChart"
-import AreaChart from '../components/charts/AreaChart'
-import BarChart from '../components/charts/BarChart'
-import PieChart from '../components/charts/PieChart'
-import getStartAndEndTime from '../utils/getStartAndEndTime'
 import { useAppContext } from '../context/ContextAPI'
+import getStartAndEndTime from '../utils/getStartAndEndTime'
+import Notification from '../utils/notification'
 
 const Traffic = () => {
     const { organization, requestPerHour, setRequestOverFiveHoursFunc, routesRequests, requestOverFiveHours, setRoutesRequestsFunc } = useAppContext()
-    // const [routesRequest, setroutesRequest] = useState([]);
-    // const [requestPerMin, setRequestPerMin] = useState([]);
-    // const [requestPerHour, setRequestPerHour] = useState([]);
-    // const [scanReports, setScanReports] = useState([])
-    const [aiSummary, setAiSummary] = useState("")
-    const [scanReports, setScanReports] = useState({});
-    const [summary, setSummary] = useState("")
-    const [routeData, setRouteData] = useState([])
-    const [selectedRoute, setSelectedRoute] = useState("users")
+    const [selectedRoute, setSelectedRoute] = useState("Not Selected")
+
+    const [methodsUsageThisWeek, setMethodsUsageThisWeek] = useState([])
+    const [methodsContribution, setMethodsContribution] = useState([])
 
     const fetchTrafficOverview = async () => {
         const { startTime, endTime } = getStartAndEndTime();
@@ -32,20 +30,16 @@ const Traffic = () => {
             let response = await getData.json();
             let newData = []
             response.data[0].trafficOverview.map((data, index) => {
-                // console.log(data)
                 // if ((response.data[0].trafficOverview.length) - 5 <= index) {
 
                 newData = [...newData, ...Object.entries(data.breakdown).map((detail) => ({
                     minute: `${data.hour}:${detail[0] < 10 ? "0" + detail[0] : detail[0]} m`,
                     requests: detail[1]
                 }))]
-
-                // }
-                console.log(newData)
             })
             setRequestOverFiveHoursFunc(newData, "new")
         } catch (error) {
-            console.log(error)
+            Notification.error("Oops! cannot fetch traffic overview at this moment")
         }
     }
 
@@ -58,58 +52,12 @@ const Traffic = () => {
                 headers: { "Content-Type": "application/json" }
             })
             let data = await response.json()
-            let routesData = data.data.map((info) => {
+            let methodsUsageThisWeek = data.data.map((info) => {
                 return { name: info.route, uv: info.totalRequests, value: info.totalRequests }
             })
-            setRoutesRequestsFunc(routesData, "new")
+            setRoutesRequestsFunc(methodsUsageThisWeek, "new")
         } catch (err) {
-            console.log(err)
-        }
-    }
-
-    const aiTrafficSummary = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/traffic-summary?organizationID=${organization._id}&startTime=2025-03-05T00:00:00&endTime=2025-03-06T23:59:59`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include"
-            })
-            const data = await response.json();
-            setAiSummary(data.data)
-        } catch (err) {
-            console.log(err)
-        }
-    }
-
-    const fetchScanResults = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/reports/latest-report?organizationID=${organization._id}&startTime=2025-03-05T00:00:00&endTime=2025-03-07T23:59:59`, {
-                method: "GET",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" }
-            })
-            const data = await response.json();
-            data.data.vulnerabilities.map((pk) => {
-                if (scanReports[pk.packageName]) {
-                    scanReports[pk.packageName].push({
-                        package: pk.version,
-                        title: pk.title,
-                        severity: pk.severity,
-                        fixedIn: pk.fixedIn,
-                    })
-                } else {
-                    scanReports[pk.packageName] = [{
-                        package: pk.version,
-                        title: pk.title,
-                        severity: pk.severity,
-                        fixedIn: pk.fixedIn,
-                    }]
-                }
-            })
-
-            setSummary(data.data.summary)
-        } catch (err) {
-            console.log(err)
+            Notification.error("Oops! cannot fetch routes traffic at this  moment")
         }
     }
 
@@ -121,11 +69,26 @@ const Traffic = () => {
                 credentials: "include",
                 headers: { "Content-Type": "application/json" }
             })
-            const data = await response.json();
-            setRouteData(data.data[0])
-            console.log(data.data[0])
+            let data = await response.json();
+            data = data.data[0]
+            setMethodsContribution([
+                { name: "GET", uv: data.totalGet, value: data.totalGet },
+                { name: "POST", uv: data.totalPost, value: data.totalPost },
+                { name: "PUT", uv: data.totalPut, value: data.totalPut },
+                { name: "DELETE", uv: data.totalDelete, value: data.totalDelete }
+            ])
+            let formattedMethodsUsageData = data.detailedData.map((routeData) => {
+                return {
+                    name: routeData.date,
+                    get: routeData.get,
+                    post: routeData.post,
+                    put: routeData.put,
+                    delete: routeData.delete
+                }
+            })
+            setMethodsUsageThisWeek(formattedMethodsUsageData)
         } catch (err) {
-            console.log(err)
+            Notification.error("Oops! cannot fetch route detail at this moment")
         }
     }
 
@@ -137,13 +100,8 @@ const Traffic = () => {
     useEffect(() => {
         fetchTrafficOverview();
         fetchRoutesTraffic();
-        // aiTrafficSummary()
-        // fetchScanResults();
     }, [])
 
-    // useEffect(() => {
-    //     console.log(requestPerMin)
-    // }, [requestPerMin])
 
     return (
         <Page>
@@ -170,7 +128,18 @@ const Traffic = () => {
                 </SectionDiv>
             </Section>
 
-
+            <Section cols={1} heading={`Detail Route Analysis (1 hour delay)`}>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                    <h6 style={{ marginRight: "10px" }}>Selected Route: </h6>
+                    <DropDown options={["users", "login", "register"]} selectedRoute={selectedRoute} handleSelectedOption={setSelectedRoute} />
+                </div>
+                <SectionDiv heading={`CRUD Requests This Week`}>
+                    <MultiBarChart data={methodsUsageThisWeek} />
+                </SectionDiv>
+                <SectionDiv heading={`CRUD Method Contribution Overall`}>
+                    <PieChart data={methodsContribution} />
+                </SectionDiv>
+            </Section>
         </Page>
     )
 }

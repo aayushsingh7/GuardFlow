@@ -18,6 +18,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 const PieChart = ({ data }) => {
+    console.log("PieChart()", data)
     return (
         <ResponsiveContainer width="100%" height={400}>
             <Chart style={{ fontSize: "14px" }} width="100%" height="100%">
