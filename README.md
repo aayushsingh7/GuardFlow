@@ -285,6 +285,18 @@ You’re now ready to **monitor, analyze, and secure your API traffic with AI-po
 
 ## 4. API Endpoints
 
+### 📌 Before You Start
+
+- The default baseURL is http://localhost:4000/
+- The format of `START_TIME` & `END_TIME` follows **ISO 8601**: `YYYY-MM-DDTHH:MM:SS`
+  - `YYYY`: Year
+  - `MM`: Month
+  - `DD`: Day
+  - `T`: Separator for date & time
+  - `HH`: Hour (24-hour format)
+  - `MM`: Minute
+  - `SS`: Second
+
 ### 4.1. AI Services
 
 <details>
@@ -329,7 +341,40 @@ PUT: {baseURL}/api/v1/ai/chat
 
 ### 4.2. API Traffic Service
 
-#### 4.2.1 **Get Traffic Overview**
+#### 4.2.1 **Save Traffic Data**
+
+> Stores the data provided in the `req.body` into the database
+
+```json
+POST: {baseURL}/api/v1/traffic/add
+```
+
+<details>
+<summary>req.body required</summary>
+
+```json
+{
+"organization": ORGANIZATION_ID,
+"hour": 4, // current hour
+"totalRequests": 340, // total request received in that hour
+"breakdown": {0:12,1:10,2:5,3:9,...}, // from 0 to 59 (request received per minute)
+"trafficPerRoutes":{ // traffic received by ever routes
+  "users":{
+    "totalRequest":40,
+    "GET":25,
+    "POST":10,
+    "DELETE":5,
+    "PUT":0,
+  },
+  "orders":{...},
+  ...
+},
+}
+```
+
+</details>
+
+#### 4.2.2 **Get Traffic Overview**
 
 > Provides an overview of traffic data, including `hour`, `totalRequest`, and `breakdown`.
 
@@ -364,7 +409,7 @@ GET: {baseURL}/api/v1/traffic/overview?organizationID=${ORGANIZATION_ID}&startTi
 
 </details>
 
-#### 4.2.2 **Get Routes Traffic Overview**
+#### 4.2.3 **Get Routes Traffic Overview**
 
 > Provides the total number of requests received by each route in the given time period.
 
@@ -381,27 +426,23 @@ GET: {baseURL}/api/v1/traffic/routes-overview?organizationID=${ORGANIZATION_ID}&
   "message": "Routes traffic data fetched successfully",
   "data": [
     {
-      "route": "products",
-      "totalRequests": 50,
-      "get": 35,
-      "post": 8,
-      "delete": 4,
-      "put": 3
+      "routes": ["orders/shipping", "orders", "orders/create", "orders/cancel"],
+      "mainRoute": "orders",
+      "totalRequests": 228330,
+      "get": 117350,
+      "post": 74630,
+      "delete": 19550,
+      "put": 16880
     },
-    {
-      "route": "checkout",
-      "totalRequests": 45,
-      "get": 30,
-      "post": 10,
-      ...
-    }
-  ]
+    ... // remaining routes
+  ],
+  "startTime": "2025-03-15T00:00:00"
 }
 ```
 
 </details>
 
-#### 4.2.3 Get Route Detailed Traffic
+#### 4.2.4 Get Route Detailed Traffic
 
 > Provide a certain route's detailed data from duration startTime & endTime
 
@@ -418,25 +459,45 @@ GET {baseURL}/api/v1/traffic/route?organizationID=${ORGANIZATION_ID}&startTime=$
   "message": "Route traffic data fetched successfully",
   "data": [
     {
-      "route": "users",
-      "totalRequest": 80,
-      "detailedData": [
+      "mainRoute": "users/login", // main route
+      "totalRequest": 277890,
+      "totalGet": 143295,
+      "totalPost": 98597,
+      "totalPut": 17457,
+      "totalDelete": 18541,
+      "subRoutes": [
+        // gives detailed sub routes traffic (is any else uses itself)
         {
-          "date": "2025-03-08",
-          "totalRequest": 40,
-          "get": 25,
-          "post": 10,
-          "delete": 3,
-          "put": 2
-        },
-        {
-          "date": "2025-03-08",
-          "totalRequest": 40,
-          "get": 10,
-          "post": 3,
-          "delete": 25,
-          "put": 2
+          "route": "users/login",
+          "totalRequest": 277890,
+          "totalGet": 143295,
+          "totalPost": 98597,
+          "totalPut": 17457,
+          "totalDelete": 18541,
+          "dailyData": [
+            {
+            "date": "2025-03-10",
+            "totalRequest": 57350,
+            "get": 27900,
+            "post": 24450,
+            "delete": 2305,
+            "put": 2695
+            }
+          ]
         }
+      ],
+      // Combines different subroutes requests (get,put,post,delete) (on that day) in one combined object.
+      "dailyAggregate": [
+        {
+          "date": "2025-03-10",
+          "metrics": {
+            "totalRequest": 57350,
+            "get": 27900,
+            "post": 24450,
+            "delete": 2305,
+            "put": 2695
+          }
+        },
         ...
       ]
     }
@@ -451,7 +512,41 @@ GET {baseURL}/api/v1/traffic/route?organizationID=${ORGANIZATION_ID}&startTime=$
 
 ### 4.3. Scan Report Services
 
-#### 4.3.1 Get Latest Scan Report
+#### 4.3.1 Save Scan Reports
+
+> Saves scan reports given in `req.body`
+
+```json
+GET: {baseURL}/api/v1/reports/add
+```
+
+<details>
+<summary>req.body required</summary>
+
+```json
+"organization": "67d4952b1b2e063e0a1b9dc4",
+"vulnerabilitiesCount": 21,
+"summary": "21 vulnerable dependency paths",
+"packageName": "",
+"vulnerabilities": [
+    {
+    "id": "SNYK-JS-AXIOS-1038255",
+    "title": "Server-Side Request Fo(SSRF)",
+    "severity": "medium",
+    "packageName": "axios",
+    "version": "0.21.0",
+    "fixedIn": [
+        "0.21.1"
+    ],
+    "_id": "67d52bd58f919d67a625a787"
+   },
+    ... // remaining data
+]
+```
+
+</details>
+
+#### 4.3.2 Get Latest Scan Report
 
 > Get latest scan report starting from startTime to endTime
 
@@ -516,12 +611,12 @@ GET: {baseURL}/api/v1/reports/latest-report?organizationID=${ORGANIZATION_ID}&st
 
 </details>
 
-#### 4.3.2 Get Scan Reports
+#### 4.3.3 Get Scan Reports
 
 > Get all the scan reports between startTime & endTime
 
 ```json
-GET:"{baseURL}/api/v1/reports?organizationID=${ORGANIZATION_ID}&startTime=${START_TIME}&endTime=${END_TIME}"
+GET: {baseURL}/api/v1/reports?organizationID=${ORGANIZATION_ID}&startTime=${START_TIME}&endTime=${END_TIME}
 ```
 
 <details>
