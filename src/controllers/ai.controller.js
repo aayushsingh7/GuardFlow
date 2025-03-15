@@ -50,11 +50,6 @@ today's date: ${new Date().toISOString().split("T")[0]}
             hour: parsedPrompt.hour,
             route: parsedPrompt.route,
           });
-          console.log(
-            "respose under the trafficService",
-            response,
-            parsedPrompt
-          );
         } else if (this.reportService[parsedPrompt.function]) {
           response = await this.reportService[parsedPrompt.function]({
             startTime: parsedPrompt.start_time,
@@ -89,7 +84,6 @@ today's date: ${new Date().toISOString().split("T")[0]}
           .send({ success: false, message: "Bad Request, please try again" });
       }
     } catch (err) {
-      console.log(err);
       res
         .status(500)
         .send({ success: false, message: "Internal Server Error" });

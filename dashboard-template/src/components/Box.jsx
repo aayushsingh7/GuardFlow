@@ -5,7 +5,6 @@ import styles from "../styles/Box.module.css"
 
 const Box = ({ packageName, data }) => {
     const [show, setShow] = useState(false)
-    // console.log(data)
     return (
         <div className={styles.box}>
             <div className={styles.box_header}>
@@ -25,7 +24,7 @@ const Box = ({ packageName, data }) => {
                         <th>Fixed Version</th>
                     </tbody>
                     {data.map((detail, index) => {
-                        // console.log("DETAILS IN HERE", detail)
+
                         return (
                             <tbody>
                                 <td key={index}>{detail.package}</td>

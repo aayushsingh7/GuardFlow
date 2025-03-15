@@ -28,16 +28,12 @@ export const AppProvider = ({ children }) => {
   const [verify, setVerify] = useState(true);
 
   const setRequestPerMinFunc = (data, type = "old") => {
-    // console.log("setRequestPerMinFunc()", requestPerMin);
     if (type === "new") {
-      // console.log("inside the new one");
       setRequestPerMin((oldData) => {
-        console.log("insdie the setRequestOverFiveHours()", [...oldData.slice(data.length), ...data])
         return [...data.slice(oldData.length), ...oldData]
       });
     } else {
       setCurrHourTrafficData((oldData) => {
-        // console.log(oldData.totalRequests, data.requests)
         let newBreakdown = { ...oldData.breakdown }; // Copy breakdown
         newBreakdown[data.minute] = data.requests;
 
@@ -81,7 +77,6 @@ export const AppProvider = ({ children }) => {
   const setRequestOverFiveHoursFunc = (data, type = "new") => {
     if (type == "new") {
       setRequestOverFiveHours((oldData) => {
-        console.log("insdie the setRequestOverFiveHours()", [...oldData.slice(data.length), ...data])
         return [...data.slice(oldData.length), ...oldData]
       });
     } else {
@@ -90,7 +85,6 @@ export const AppProvider = ({ children }) => {
         if (newData.length > 300) {
           newData.shift();
         }
-        console.log("-------------- setRequestOverFiveHoursFunc() -----------------", data)
         newData.push({
           minute: data.time,
           requests: data.requests,
@@ -121,7 +115,6 @@ export const AppProvider = ({ children }) => {
     } else {
       setRoutesRequests((oldData) => {
         let newData = [...oldData];
-        console.log("setRoutesRequestsFunc() receiving the data 1st time", data);
 
         for (let [route, methods] of Object.entries(data)) {
           let found = false;

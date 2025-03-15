@@ -1,8 +1,4 @@
 const formatResponse = (response) => {
-  console.log(
-    "---------------------------------Response recived insdie formatResponse---------------------------",
-    response
-  );
   let newRes = "";
   if (response.startsWith("```")) {
     newRes = response.slice(3, -4);

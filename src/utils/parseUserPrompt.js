@@ -165,7 +165,7 @@ const parseUserPrompt = async (prompt) => {
     });
     return formatResponse(response);
   } catch (err) {
-    console.log("Error while converting message into function", err);
+    throw err;
   }
 };
 

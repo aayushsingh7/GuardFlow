@@ -59,7 +59,6 @@ ${JSON.stringify(currHourTrafficData)}
                     }),
                 });
                 let data = await response.json();
-                console.log(data)
                 setMessages((messages) => [
                     ...messages,
                     {

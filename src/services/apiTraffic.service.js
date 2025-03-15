@@ -12,27 +12,22 @@ class ApiTrafficService {
       throw err;
     }
   }
- 
+
   async getTrafficOverview(query) {
     try {
       const { organizationID, startTime, endTime } = query;
-
-      // Convert startTime and endTime to Date objects if they are strings
       const start = new Date(startTime);
       const end = new Date(endTime);
       start.setUTCHours(0, 0, 0, 0);
       end.setUTCHours(23, 59, 59, 999);
-
-      // Pipeline to aggregate traffic data by date and hour
       const pipeline = [
-        // Match documents within the time range and for the specified organization
         {
           $match: {
             organization: new mongoose.Types.ObjectId(organizationID),
             createdAt: { $gte: start, $lte: end },
           },
         },
-        // Add a date field (without time) for grouping
+
         {
           $addFields: {
             dateOnly: {
@@ -40,7 +35,7 @@ class ApiTrafficService {
             },
           },
         },
-        // Group by date and hour
+
         {
           $group: {
             _id: {
@@ -51,7 +46,7 @@ class ApiTrafficService {
             breakdown: { $first: "$breakdown" },
           },
         },
-        // Group again to structure data by date with an array of hourly data
+
         {
           $group: {
             _id: "$_id.date",
@@ -64,7 +59,7 @@ class ApiTrafficService {
             },
           },
         },
-        // Sort the trafficOverview array by hour
+
         {
           $addFields: {
             trafficOverview: {
@@ -75,7 +70,7 @@ class ApiTrafficService {
             },
           },
         },
-        // Format the final output
+
         {
           $project: {
             _id: 0,
@@ -83,13 +78,11 @@ class ApiTrafficService {
             trafficOverview: 1,
           },
         },
-        // Sort by date
+
         {
           $sort: { date: 1 },
         },
       ];
-
-      // Execute the aggregation pipeline
       const result = await ApiTraffic.aggregate(pipeline);
       return result;
     } catch (err) {
@@ -112,45 +105,41 @@ class ApiTrafficService {
     } catch (err) {
       throw err;
     }
-    // fetches all routes traffic
   }
   async getRouteTraffic(query) {
     const { organizationID, startTime, endTime, route } = query;
 
     try {
-      // Convert startTime and endTime to Date objects if they are strings
       const start = new Date(startTime);
       const end = new Date(endTime);
       start.setUTCHours(0, 0, 0, 0);
       end.setUTCHours(23, 59, 59, 999);
 
-      // Pipeline to aggregate traffic data for the main route and all sub-routes
       const pipeline = [
-        // Match documents within the time range and for the specified organization
         {
           $match: {
             organization: new mongoose.Types.ObjectId(organizationID),
             createdAt: { $gte: start, $lte: end },
           },
         },
-        // Project and convert trafficPerRoutes to an array of key-value pairs
+
         {
           $project: {
             createdAt: 1,
             routeEntries: { $objectToArray: "$trafficPerRoutes" },
           },
         },
-        // Unwind the array to create a document for each route
+
         {
           $unwind: "$routeEntries",
         },
-        // Match only routes that start with the specified route pattern
+
         {
           $match: {
             "routeEntries.k": { $regex: new RegExp(`^${route}($|/)`, "i") },
           },
         },
-        // Add a date field (without time) for grouping
+
         {
           $addFields: {
             dateOnly: {
@@ -159,7 +148,7 @@ class ApiTrafficService {
             subRoute: "$routeEntries.k",
           },
         },
-        // Group by date and specific sub-route to get detailed metrics
+
         {
           $group: {
             _id: {
@@ -175,7 +164,7 @@ class ApiTrafficService {
             put: { $sum: { $ifNull: ["$routeEntries.v.PUT", 0] } },
           },
         },
-        // Group again to organize by sub-route
+
         {
           $group: {
             _id: "$_id.subRoute",
@@ -197,7 +186,7 @@ class ApiTrafficService {
             },
           },
         },
-        // Now group all sub-routes together for the main route
+
         {
           $group: {
             _id: null,
@@ -221,7 +210,7 @@ class ApiTrafficService {
             allDailyData: { $push: "$dailyData" },
           },
         },
-        // Unwind and regroup the daily data to get consolidated daily metrics
+
         {
           $project: {
             _id: 0,
@@ -241,7 +230,7 @@ class ApiTrafficService {
             },
           },
         },
-        // Process the consolidated daily data
+
         {
           $addFields: {
             dateMap: {
@@ -264,7 +253,7 @@ class ApiTrafficService {
             },
           },
         },
-        // Convert back to array and format final output
+
         {
           $project: {
             mainRoute: 1,
@@ -286,7 +275,7 @@ class ApiTrafficService {
             },
           },
         },
-        // Sort the daily data by date
+
         {
           $addFields: {
             dailyAggregate: {
@@ -299,10 +288,8 @@ class ApiTrafficService {
         },
       ];
 
-      // Execute the aggregation pipeline
       const result = await ApiTraffic.aggregate(pipeline);
 
-      // If no data found, return empty result with the route
       if (result.length === 0) {
         return [
           {
@@ -328,26 +315,23 @@ class ApiTrafficService {
     const { organizationID, startTime, endTime } = query;
 
     try {
-      // Convert startTime and endTime to Date objects
       const start = new Date(startTime);
       const end = new Date(endTime);
       start.setUTCHours(0, 0, 0, 0);
       end.setUTCHours(23, 59, 59, 999);
 
-      // Pipeline to aggregate weekly traffic data by route with daily breakdown
       const pipeline = [
-        // Match documents within the time range and for the specified organization
         {
           $match: {
             organization: new mongoose.Types.ObjectId(organizationID),
             createdAt: { $gte: start, $lte: end },
           },
         },
-        // Add day of week field (1-7, where 1 is Monday)
+
         {
           $addFields: {
             dayOfWeek: { $dayOfWeek: "$createdAt" },
-            // Convert MongoDB's dayOfWeek (1-7 where 1 is Sunday) to ISO format (1-7 where 1 is Monday)
+
             isoDayOfWeek: {
               $let: {
                 vars: {
@@ -355,27 +339,27 @@ class ApiTrafficService {
                 },
                 in: {
                   $cond: [
-                    { $eq: ["$$dow", 1] }, // If Sunday (1 in MongoDB)
-                    7, // Set to 7 (Sunday in ISO)
-                    { $subtract: ["$$dow", 1] }, // Otherwise subtract 1
+                    { $eq: ["$$dow", 1] },
+                    7,
+                    { $subtract: ["$$dow", 1] },
                   ],
                 },
               },
             },
           },
         },
-        // Convert trafficPerRoutes Map to array for processing
+
         {
           $project: {
             isoDayOfWeek: 1,
             routesEntries: { $objectToArray: "$trafficPerRoutes" },
           },
         },
-        // Unwind the array to get one document per route
+
         {
           $unwind: "$routesEntries",
         },
-        // Group by route and day of week
+
         {
           $group: {
             _id: {
@@ -385,7 +369,7 @@ class ApiTrafficService {
             totalRequests: { $sum: "$routesEntries.v" },
           },
         },
-        // Group by route to create the breakdown structure
+
         {
           $group: {
             _id: "$_id.route",
@@ -398,7 +382,7 @@ class ApiTrafficService {
             },
           },
         },
-        // Format the final output
+
         {
           $project: {
             _id: 0,
@@ -407,24 +391,18 @@ class ApiTrafficService {
             breakdown: 1,
           },
         },
-        // Sort by most traffic
+
         {
           $sort: { totalRequestThisWeek: -1 },
         },
       ];
 
-      // Execute the aggregation pipeline
       let result = await ApiTraffic.aggregate(pipeline);
-
-      // Ensure all days are represented in breakdown (even days with 0 requests)
       result = result.map((routeData) => {
-        // Create a map of existing days
         const daysMap = {};
         routeData.breakdown.forEach((day) => {
           daysMap[day.day] = day.totalRequest;
         });
-
-        // Create a complete breakdown with all 7 days
         const completeBreakdown = [];
         for (let i = 1; i <= 7; i++) {
           completeBreakdown.push({
@@ -432,8 +410,6 @@ class ApiTrafficService {
             totalRequest: daysMap[i] || 0,
           });
         }
-
-        // Sort by day
         completeBreakdown.sort((a, b) => a.day - b.day);
 
         return {
@@ -452,32 +428,29 @@ class ApiTrafficService {
     const { organizationID, startTime, endTime } = query;
 
     try {
-      // Convert startTime and endTime to Date objects if they are strings
       const start = new Date(startTime);
       const end = new Date(endTime);
       start.setUTCHours(0, 0, 0, 0);
       end.setUTCHours(23, 59, 59, 999);
 
-      // Pipeline to aggregate traffic data by routes with method breakdown
       const pipeline = [
-        // Match documents within the time range and for the specified organization
         {
           $match: {
             organization: new mongoose.Types.ObjectId(organizationID),
             createdAt: { $gte: start, $lte: end },
           },
         },
-        // Unwind the trafficPerRoutes Map to get individual route entries
+
         {
           $project: {
             routesEntries: { $objectToArray: "$trafficPerRoutes" },
           },
         },
-        // Unwind the array to get one document per route
+
         {
           $unwind: "$routesEntries",
         },
-        // Add a field to extract the main route (everything before the first slash or the whole string)
+
         {
           $addFields: {
             mainRoute: {
@@ -492,7 +465,7 @@ class ApiTrafficService {
             fullRoute: "$routesEntries.k",
           },
         },
-        // Group by mainRoute to aggregate the data
+
         {
           $group: {
             _id: "$mainRoute",
@@ -500,7 +473,7 @@ class ApiTrafficService {
             routeData: { $push: "$routesEntries.v" },
           },
         },
-        // Process the route data to extract HTTP method information
+
         {
           $project: {
             _id: 0,
@@ -553,13 +526,10 @@ class ApiTrafficService {
             },
           },
         },
-        // Sort by most traffic to least
         {
           $sort: { totalRequests: -1 },
         },
       ];
-
-      // Execute the aggregation pipeline
       const result = await ApiTraffic.aggregate(pipeline);
       return result;
     } catch (err) {

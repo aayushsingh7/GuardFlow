@@ -36,7 +36,7 @@ const Traffic = () => {
                     newData = [
                         ...newData,
                         ...Object.entries(data.breakdown)
-                            .slice(0, 5) // Get the latest 5
+                            // .slice(0, 5) // Get the latest 5
                             .map((detail) => ({
                                 minute: `${data.hour}:${detail[0] < 10 ? "0" + detail[0] : detail[0]} m`,
                                 requests: detail[1]
@@ -68,7 +68,6 @@ const Traffic = () => {
             })
             setRoutesRequestsFunc(methodsUsageThisWeek, "new")
         } catch (err) {
-            console.log(err)
             Notification.error("Oops! cannot fetch routes traffic at this  moment")
         }
     }
@@ -100,7 +99,6 @@ const Traffic = () => {
             });
             setMethodsUsageThisWeek(formattedMethodsUsageData)
         } catch (err) {
-            console.log(err)
             Notification.error("Oops! cannot fetch route detail at this moment")
         }
     }

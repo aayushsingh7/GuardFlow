@@ -86,9 +86,10 @@ const Home = () => {
     }
 
     const fetchScanResults = async () => {
+        const { startTime, endTime } = getStartAndEndTime()
         setScanReportsLoading(true)
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/reports/latest-report?organizationID=${organization._id}&startTime=2025-03-05T00:00:00&endTime=2025-03-07T23:59:59`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/reports/latest-report?organizationID=${organization._id}&startTime=${startTime}&endTime=${endTime}`, {
                 method: "GET",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" }

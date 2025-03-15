@@ -208,7 +208,12 @@ async function triggerPerHour(socket) {
   reqPerMin = {};
   reqPerRoutes = new Map();
   curMinute = curMinute % 60;
-  curHour = (curHour + 1) % 24;
+  curHour++;
+  if (curHour > 23) {
+    // perform scan automatically onces a day
+    socket.emit("perform_scan");
+    curHour = curHour % 24;
+  }
   await apiTrafficService.addTraffic(trafficSummary);
 }
 

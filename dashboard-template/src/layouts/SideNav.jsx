@@ -6,7 +6,6 @@ const SideNav = () => {
     const [selectedRoute, setSelectedRoute] = useState("/")
     useEffect(() => {
         setSelectedRoute(location.pathname)
-        console.log(selectedRoute.length)
     }, [location.pathname])
     return (
         <nav className={`${styles.sidenav} ${styles.show}`}>

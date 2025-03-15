@@ -20,7 +20,6 @@ const App = () => {
     const socket = io(`${import.meta.env.VITE_SOCKET_URL}`)
     let currMinData = []
     socket.on("push_scan_results", (report) => {
-      console.log("----------------------push_scan_results------------------", report)
       setNewReportsAvailable(true)
     })
     socket.on("main_server_status", (connectionStatus) => {
@@ -39,33 +38,10 @@ const App = () => {
       setRequestOverFiveHoursFunc(currMinData, "new")
       setRoutesRequestsFunc(data.trafficPerRoutes, "old")
     })
-    // setRequestPerMinFunc(data, "new")
     socket.on("req_per_minute", (data) => {
-      // if(data)
       setRequestPerMinFunc(data, "old")
       setRequestOverFiveHoursFunc(data, "old")
-
-      // { name: info.route, uv: info.totalRequests, value: info.totalRequests }
       setRoutesRequestsFunc(data.routesTraffic, "old")
-
-
-      // console.log(data)
-      // console.log(currHourTrafficData)
-      // setRequestPerHourFunc(data)
-
-      // setRequestPerMin((oldData) => {
-      //   return [...oldData, {
-      //     minute: data.time,
-      //     requests: data.requests
-      //   }]
-      // })
-
-      // routesReqestsData((oldData)=> {
-
-      // })
-    })
-    socket.on("req_per_hour", (data) => {
-      console.log("REQUEST PER HOUR: ", data)
     })
   }, [])
 
