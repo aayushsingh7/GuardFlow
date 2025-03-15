@@ -39,7 +39,6 @@ app.get("/", (req, res) => {
 });
 
 const httpServer = createServer(app);
-// const userSockets = new Map();
 
 const io = new Server(httpServer, {
   cors: {
@@ -79,6 +78,7 @@ io.on("connection", (socket) => {
   socket.on("main_server_connected", () => {
     mainServerConnected = true;
     socket.broadcast.emit("main_server_status", mainServerConnected);
+    socket.emit("perform_scan");
   });
 
   socket.on("req_received", (reqDetails) => {
@@ -200,7 +200,6 @@ async function triggerPerHour(socket) {
     trafficPerRoutes: Object.fromEntries(reqPerRoutes),
   };
 
-  // console.log(trafficSummary, reqPerRoutes);
   socket.emit("req_per_hour", {
     hour: formatHour(curHour),
     requests: totalRequestPerHour,

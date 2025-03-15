@@ -20,7 +20,7 @@ export const AppProvider = ({ children }) => {
   const [routesRequests, setRoutesRequests] = useState([]);
 
   const [isServerConnected, setIsServerConnected] = useState(false)
-  const [newReportsAvailable, setNewReportsAvailable] = useState(true)
+  const [newReportsAvailable, setNewReportsAvailable] = useState(false)
 
   // organization
   const [organization, setOrganization] = useState({});

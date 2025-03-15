@@ -81,10 +81,14 @@ cd dashboard-template
 npm install
 ```
 
-#### 3.4.2. Start the development server
+#### 3.4.2. Build and start the application
 
 ```sh
-npm run dev
+npm run build
+```
+
+```sh
+npm run preview
 ```
 
 #### 3.4.3. Login/Register your organization
@@ -137,8 +141,10 @@ const __dirname = dirname(__filename);
 <details>
 <summary>Socket.io client setup for realtime communication</summary>
 
+> Default baseURL is http://localhost:4000 for locally hosted server
+
 ```js
-const socket = io("http://localhost:4000/");
+const socket = io("{baseURL}/");
 
 socket.on("connect", () => {
   socket.emit("main_server_connected");
@@ -299,7 +305,7 @@ You’re now ready to **monitor, analyze, and secure your API traffic with AI-po
 > Provides a quick summary of traffic data and scans to check for anomalies and vulnerabilities.
 
 ```json
-GET: "http://localhost:4000/api/v1/ai/traffic-summary?organizationID=${organizationID}&startTime=2025-03-05T00:00:00&endTime=2025-03-06T23:59:59"
+GET: {baseURL}/api/v1/ai/traffic-summary?organizationID=${ORGANIZATION_ID}&startTime=${START_TIME}&endTime=${END_TIME}
 ```
 
 #### 4.1.2 **Get Detailed Analysis of Traffic and Scan Results + AI Chat**
@@ -307,7 +313,7 @@ GET: "http://localhost:4000/api/v1/ai/traffic-summary?organizationID=${organizat
 > Provides a detailed breakdown of traffic data, scan results, and an AI chatbot for better interactions and problem-solving.
 
 ```json
-PUT: "http://localhost:4000/api/v1/ai/chat"
+PUT: {baseURL}/api/v1/ai/chat
 ```
 
 **Request Body:**
@@ -328,7 +334,7 @@ PUT: "http://localhost:4000/api/v1/ai/chat"
 > Provides an overview of traffic data, including `hour`, `totalRequest`, and `breakdown`.
 
 ```json
-GET: "http://localhost:4000/api/v1/traffic/overview?organizationID=organizationID&startTime=start_time&endTime=end_time"
+GET: {baseURL}/api/v1/traffic/overview?organizationID=${ORGANIZATION_ID}&startTime=${START_TIME}&endTime=${END_TIME}
 ```
 
 <details>
@@ -363,7 +369,7 @@ GET: "http://localhost:4000/api/v1/traffic/overview?organizationID=organizationI
 > Provides the total number of requests received by each route in the given time period.
 
 ```json
-GET: "http://localhost:4000/api/v1/traffic/routes-overview?organizationID=organizationID&startTime=start_time&endTime=end_time"
+GET: {baseURL}/api/v1/traffic/routes-overview?organizationID=${ORGANIZATION_ID}&startTime=${START_TIME}&endTime=${END_TIME}
 ```
 
 <details>
@@ -400,7 +406,7 @@ GET: "http://localhost:4000/api/v1/traffic/routes-overview?organizationID=organi
 > Provide a certain route's detailed data from duration startTime & endTime
 
 ```json
-GET:"http://localhost:4000/api/v1/traffic/route?organizationID=organizationID&startTime=start_time&endTime=end_time&route=users"
+GET {baseURL}/api/v1/traffic/route?organizationID=${ORGANIZATION_ID}&startTime=${START_TIME}&endTime=${END_TIME}
 ```
 
   <details>
@@ -450,7 +456,7 @@ GET:"http://localhost:4000/api/v1/traffic/route?organizationID=organizationID&st
 > Get latest scan report starting from startTime to endTime
 
 ```json
-GET:"http://localhost:4000/api/v1/reports/latest-report?organizationID=ORGANIZATION_ID&startTime=START_TIME&endTime=END_TIME"
+GET: {baseURL}/api/v1/reports/latest-report?organizationID=${ORGANIZATION_ID}&startTime=${START_TIME}&endTime=${END_TIME}
 ```
 
 <details>
@@ -515,7 +521,7 @@ GET:"http://localhost:4000/api/v1/reports/latest-report?organizationID=ORGANIZAT
 > Get all the scan reports between startTime & endTime
 
 ```json
-GET:"http://localhost:4000/api/v1/reports?organizationID=ORGANIZATION_ID&startTime=START_TIME&endTime=END_TIME"
+GET:"{baseURL}/api/v1/reports?organizationID=${ORGANIZATION_ID}&startTime=${START_TIME}&endTime=${END_TIME}"
 ```
 
 <details>

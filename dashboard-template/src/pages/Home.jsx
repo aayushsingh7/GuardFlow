@@ -124,7 +124,7 @@ const Home = () => {
         if (organization._id && isServerConnected) {
             fetchTrafficOverview();
             fetchRoutesTraffic();
-            // aiTrafficSummary()
+            aiTrafficSummary()
             fetchScanResults();
         }
     }, [organization._id, isServerConnected])
