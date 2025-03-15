@@ -39,8 +39,8 @@ Follow these steps to set up the project correctly.
 ### 1️⃣ Clone the Repository
 
 ```sh
-git clone <repo-url>
-cd <project-folder>
+git clone https://github.com/aayushsingh7/GuardFlow.git
+cd GuardFlow
 ```
 
 ### 2️⃣ Install Dependencies
