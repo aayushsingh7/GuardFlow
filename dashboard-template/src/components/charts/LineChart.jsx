@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
     LineChart as Chart,
     Line,
@@ -10,20 +11,10 @@ import {
     Brush,
     ReferenceArea,
 } from "recharts";
-
-// const generateData = () =>
-//     Array.from({ length: 1 * 60 }, (_, i) => ({
-//         // Math.floor(i / 60)
-//         minute: `00:${i % 60 < 10 ? "0" + i % 60 : i % 60} m`,
-//         requests: Math.floor(Math.random() * 500), // Example data
-//     }));
+import NotEnoughDataWarning from "../NotEnoughDataWarning";
 
 
 const RequestPerMinuteChart = ({ data }) => {
-
-    useEffect(() => {
-        console.log("DATA CHANGED", data)
-    }, [data])
 
     const [zoomDomain, setZoomDomain] = useState({ start: 0, end: data.length });
 
@@ -40,8 +31,7 @@ const RequestPerMinuteChart = ({ data }) => {
 
     return (
         <ResponsiveContainer width="100%" height={300} style={{ marginLeft: "-30px" }}>
-
-            <Chart width={100} data={data}>
+            {data.length == 0 ? <NotEnoughDataWarning /> : <Chart width={100} data={data}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="minute" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ style: { fontSize: 10 } }} />
@@ -49,9 +39,10 @@ const RequestPerMinuteChart = ({ data }) => {
                 <Brush dataKey="minute" height={30} stroke="#8884d8" />
                 <Line type="monotone" dataKey="requests" stroke="#8884d8" strokeWidth={2} />
                 <ReferenceArea onMouseDown={handleZoom} />
-            </Chart>
+            </Chart>}
         </ResponsiveContainer>
     );
 };
 
 export default RequestPerMinuteChart;
+

@@ -13,7 +13,7 @@ class OrganizationControllers {
     try {
       let { org, token } = await this.orgService.register(req.body);
 
-      resres
+      res
         .cookie("guardflow", token, {
           sameSite: "none",
           httpOnly: true,

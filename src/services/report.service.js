@@ -14,7 +14,8 @@ class ReportService {
     const { startTime, endTime, organizationID } = query;
     let start = new Date(startTime);
     let end = new Date(endTime);
-    // console.log("Organization id is here", organizationID);
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCHours(23, 59, 59, 999);
     try {
       const latestReport = await Report.findOne({
         organization: organizationID,

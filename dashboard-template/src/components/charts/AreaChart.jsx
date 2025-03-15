@@ -1,12 +1,11 @@
 import React from 'react'
 import { Area, CartesianGrid, AreaChart as Chart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import NotEnoughDataWarning from '../NotEnoughDataWarning'
 
 const AreaChart = ({ data }) => {
-    // console.log("data inside AreaChart.jsx", data)
-
     return (
         <ResponsiveContainer width="100%" height={300} style={{ marginLeft: "-20px" }}>
-            <Chart data={data}
+            {data.length == 0 ? <NotEnoughDataWarning /> : <Chart data={data}
                 margin={{ top: 10, left: 0, bottom: 0 }} >
                 <defs>
                     <linearGradient id="colorrequests" x1="0" y1="0" x2="0" y2="2">
@@ -24,7 +23,7 @@ const AreaChart = ({ data }) => {
                 <Tooltip />
                 <Area type="monotone" dataKey="requests" stroke="#8884d8" fillOpacity={1} fill="url(#colorrequests)" />
                 <Area type="monotone" dataKey="pv" stroke="#82ca9d" fillOpacity={1} fill="url(#colorPv)" />
-            </Chart>
+            </Chart>}
         </ResponsiveContainer>
     )
 }

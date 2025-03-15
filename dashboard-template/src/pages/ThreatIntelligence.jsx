@@ -8,7 +8,7 @@ import { useAppContext } from '../context/ContextAPI';
 import Notification from '../utils/notification';
 
 const ThreatIntelligence = (e) => {
-    const { currHourTrafficData, organization } = useAppContext();
+    const { currHourTrafficData, organization, isServerConnected } = useAppContext();
     const messageRef = useRef();
     const [loading, setLoading] = useState(false)
     const [messages, setMessages] = useState([
@@ -28,9 +28,12 @@ const ThreatIntelligence = (e) => {
     const [userPrompt, setUserPrompt] = useState('');
 
     const sendMessage = async (e) => {
-        setLoading(true)
         if (e.key === 'Enter') {
-            console.log('function triggered');
+            if (!isServerConnected) {
+                Notification.error("Please connect your main server to access this feature")
+                return;
+            }
+            setLoading(true)
             let prompt = userPrompt;
             setMessages((messages) => [
                 ...messages,
@@ -56,6 +59,7 @@ ${JSON.stringify(currHourTrafficData)}
                     }),
                 });
                 let data = await response.json();
+                console.log(data)
                 setMessages((messages) => [
                     ...messages,
                     {

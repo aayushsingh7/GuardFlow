@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import React, { useEffect, useRef, useState } from 'react'
+import { Link, Route, Routes } from 'react-router-dom'
 import io from "socket.io-client"
 import SideNav from './layouts/SideNav'
 import Home from './pages/Home.jsx'
@@ -14,10 +14,19 @@ import Profile from './pages/Profile.jsx'
 import Verify from './layouts/Verify.jsx'
 
 const App = () => {
-  const { setVerify, verify, setRequestPerMinFunc, setRequestOverFiveHoursFunc, currHourTrafficData, setRoutesRequestsFunc } = useAppContext()
+  const { setVerify, verify, setRequestPerMinFunc, setRequestOverFiveHoursFunc, currHourTrafficData, setRoutesRequestsFunc, isServerConnected, setIsServerConnected, setNewReportsAvailable } = useAppContext()
+
   useEffect(() => {
     const socket = io(`${import.meta.env.VITE_SOCKET_URL}`)
     let currMinData = []
+    socket.on("push_scan_results", (report) => {
+      console.log("----------------------push_scan_results------------------", report)
+      setNewReportsAvailable(true)
+    })
+    socket.on("main_server_status", (connectionStatus) => {
+
+      setIsServerConnected(connectionStatus)
+    })
     socket.on("current_hour_data", (data) => {
       for (let minData of Object.entries(data.breakdown)) {
         currMinData.push({
@@ -61,15 +70,15 @@ const App = () => {
   }, [])
 
   useEffect(() => {
-    console.log("Now inside currHourTrafficData", currHourTrafficData)
-  }, [currHourTrafficData])
-
-  useEffect(() => {
     setVerify(true)
   }, [])
 
   return (
     <div className='app'>
+      {!isServerConnected && <div className="server_error">
+        Connection to the main server is required to access the dashboard and its features.
+        <Link style={{ marginLeft: "7px" }} to="">Refer to README.md for setup instructions.</Link>
+      </div>}
       {verify && <Verify />}
       <Routes>
         <Route path="/" element={

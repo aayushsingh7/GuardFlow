@@ -25,7 +25,9 @@ const Verify = () => {
             Notification.error("Oops! something went wrong, try again later")
             navigate("/login")
         }
-        setVerify(false)
+        setTimeout(() => {
+            setVerify(false)
+        }, 2000)
     }
 
     useEffect(() => {

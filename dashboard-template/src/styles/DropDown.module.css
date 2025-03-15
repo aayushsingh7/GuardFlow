@@ -5,7 +5,7 @@
   border-radius: 5px;
   cursor: pointer;
   position: relative;
-  z-index: 1000;
+  z-index: 10;
 }
 
 .selected {
@@ -40,6 +40,17 @@
   border-radius: 5px;
   left: 0%;
   width: 100%;
+  max-height: 200px;
+  overflow-y: scroll;
   background: #ffffff;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+}
+
+.options::-webkit-scrollbar {
+  width: 10px;
+}
+
+.options::-webkit-scrollbar-thumb {
+  background: #c2c2c2;
+  border-radius: 2px;
 }

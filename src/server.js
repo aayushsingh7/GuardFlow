@@ -62,8 +62,12 @@ let reqPerRoutes = new Map();
 let routesReqPerMin = new Map();
 let curMinute = getCurrentMinute();
 let curHour = getCurrentHour();
+let mainServerConnected = false;
+let last10Requests = [];
 
 io.on("connection", (socket) => {
+  socket.emit("main_server_status", mainServerConnected);
+
   socket.emit("current_hour_data", {
     organization: process.env.ORGANIZATION_ID,
     hour: curHour,
@@ -72,8 +76,13 @@ io.on("connection", (socket) => {
     trafficPerRoutes: Object.fromEntries(reqPerRoutes),
   });
 
+  socket.on("main_server_connected", () => {
+    mainServerConnected = true;
+    socket.broadcast.emit("main_server_status", mainServerConnected);
+  });
+
   socket.on("req_received", (reqDetails) => {
-    let mainRoute = reqDetails.pathComponents[0] || "/";
+    let mainRoute = reqDetails.pathComponents.join("/");
     let method = reqDetails.method;
     reqPerMinCount++;
 
@@ -116,24 +125,18 @@ io.on("connection", (socket) => {
 
     // Save updated data back to the Map
     reqPerRoutes.set(mainRoute, routeData);
-    console.log(routeDataPerMin);
     routesReqPerMin.set(mainRoute, routeDataPerMin);
-  });
-
-  // request packages & dependencies scan
-  socket.on("scan_requested", () => {
-    socket.emit("perform_scan");
   });
 
   // scan results
   socket.on("scan_results", async (results) => {
     scan_result = results;
-    socket.emit("push_scan_results", results);
     let data = {
       organization: process.env.ORGANIZATION_ID,
       ...results,
     };
     await reportService.saveScanReport(data);
+    socket.broadcast.emit("push_scan_results", results);
   });
 
   // request open & closed port scanning
@@ -147,12 +150,22 @@ io.on("connection", (socket) => {
 });
 
 function triggerPerMinute(socket) {
-  console.log("function triggger of minite ", curMinute);
+  if (!mainServerConnected) return;
+  if (last10Requests.length === 10) {
+    let sum = last10Requests.reduce((sum, cur) => sum + cur, 0);
+    if (sum == 0) {
+      mainServerConnected = false;
+      socket.emit("main_server_status", mainServerConnected);
+    } else {
+      last10Requests.shift();
+    }
+  }
+  last10Requests.push(reqPerMinCount);
   socket.emit("req_per_minute", {
     time: `${curHour < 10 ? `0${curHour}` : curHour}:${
       curMinute < 10 ? "0" + curMinute : curMinute
     }`,
-    requests: reqPerMinCount || 10,
+    requests: reqPerMinCount,
     minute: curMinute,
     hour: curHour,
     routesTraffic: Object.fromEntries(routesReqPerMin),

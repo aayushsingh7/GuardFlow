@@ -11,9 +11,10 @@ import LineChart from '../components/charts/LineChart'
 import { useAppContext } from '../context/ContextAPI'
 import getStartAndEndTime from '../utils/getStartAndEndTime'
 import Notification from '../utils/notification'
+import NotEnoughDataWarning from '../components/NotEnoughDataWarning'
 
 const Home = () => {
-    const { requestPerMin, requestPerHour, setRequestPerHour, setRequestPerMin, organization, setRequestPerMinFunc, setRequestPerHourFunc, setRoutesRequestsFunc, routesRequests } = useAppContext()
+    const { requestPerMin, requestPerHour, setRequestPerHour, setRequestPerMin, organization, setRequestPerMinFunc, setRequestPerHourFunc, setRoutesRequestsFunc, routesRequests, isServerConnected, newReportsAvailable } = useAppContext()
     const [aiSummary, setAiSummary] = useState("")
     const [scanReports, setScanReports] = useState({});
     const [summary, setSummary] = useState("")
@@ -30,13 +31,13 @@ const Home = () => {
                 headers: { "Content-Type": "application/json" }
             })
             let response = await getData.json();
-            if (response.data[0]?.trafficOverview) {
-                let formattedData = response.data[0]?.trafficOverview.map((data) => ({
+            if (response.data[response.data.length - 1]?.trafficOverview) {
+                let formattedData = response.data[response.data.length - 1]?.trafficOverview.map((data) => ({
                     hour: data.hour <= 12 ? `${data.hour} AM` : `${data.hour} PM`,
                     requests: data.totalRequests
                 }));
 
-                const lastData = response.data[0]?.trafficOverview[response.data[0]?.trafficOverview.length - 1];
+                const lastData = response.data[response.data.length - 1]?.trafficOverview[response.data[response.data.length - 1]?.trafficOverview.length - 1];
                 const formattedMinData = Object.entries(lastData.breakdown).map((detail) => ({
                     minute: `${lastData.hour < 10 ? `0${lastData.hour}` : lastData.hour}:${detail[0] < 10 ? "0" + detail[0] : detail[0]} m`,
                     requests: detail[1]
@@ -59,7 +60,7 @@ const Home = () => {
             })
             let data = await response.json()
             let routesData = data.data.map((info) => {
-                return { name: info.route, uv: info.totalRequests }
+                return { name: info.mainRoute, uv: info.totalRequests }
             })
             setRoutesRequestsFunc(routesData, "new")
         } catch (err) {
@@ -120,14 +121,13 @@ const Home = () => {
 
 
     useEffect(() => {
-        if (organization._id) {
+        if (organization._id && isServerConnected) {
             fetchTrafficOverview();
             fetchRoutesTraffic();
-            aiTrafficSummary()
+            // aiTrafficSummary()
             fetchScanResults();
         }
-    }, [organization._id])
-
+    }, [organization._id, isServerConnected])
 
     return (
         <Page>
@@ -135,7 +135,7 @@ const Home = () => {
             <Section heading={"AI Overview"} cols={1}>
                 <SectionDiv>
                     {
-                        aiSummaryLoading ? <div className="loading_container"><div className='loader'></div></div> :
+                        !isServerConnected ? <NotEnoughDataWarning /> : aiSummaryLoading ? <div className="loading_container"><div className='loader'></div></div> :
                             <div data-color-mode="light" style={{ paddingBottom: "15px" }}>
                                 <MarkdownPreview source={aiSummary.slice(5, -3)} />
                             </div>
@@ -158,10 +158,10 @@ const Home = () => {
             </Section>
 
             <Section heading={"Scan Overview"} cols={1}>
+                {newReportsAvailable && <div className="update_available">New  Scan Reports Are Available, Please Refreash The Page To See</div>}
                 <SectionDiv heading={summary}>
                     {
-                        scanReportsLoading ? <div className="loading_container"><div className='loader'></div></div> : Object.entries(scanReports)?.map((obj) => {
-                            // console.log("THIS IS OBJECT", obj[0], obj[1])
+                        (!isServerConnected || Object.entries(scanReports).length == 0) ? <NotEnoughDataWarning /> : scanReportsLoading ? <div className="loading_container"><div className='loader'></div></div> : Object.entries(scanReports)?.map((obj) => {
                             return <Box packageName={obj[0]} data={obj[1]} />
                         })}
                 </SectionDiv>

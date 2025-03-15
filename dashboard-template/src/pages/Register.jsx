@@ -43,8 +43,8 @@ const Register = () => {
             <form onSubmit={(e) => e.preventDefault()}>
                 <h2>Register To Continue</h2>
                 <div className={styles.input_feilds}>
+                    <input required value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" type="text" placeholder='Enter Organization Name' />
                     <input required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" type="text" placeholder='Enter Organization Email' />
-                    <input required value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" type="text" placeholder='Enter Organization Username' />
                     <input required value={location} onChange={(e) => setLocation(e.target.value)} autoComplete="off" type="text" placeholder='Enter Organization Location' />
                     <input required value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder='Enter Password' autoComplete='off' />
                 </div>

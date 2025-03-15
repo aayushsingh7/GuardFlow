@@ -13,11 +13,13 @@ import getStartAndEndTime from '../utils/getStartAndEndTime'
 import Notification from '../utils/notification'
 
 const Traffic = () => {
-    const { organization, requestPerHour, setRequestOverFiveHoursFunc, routesRequests, requestOverFiveHours, setRoutesRequestsFunc } = useAppContext()
+    const { organization, requestPerHour, setRequestOverFiveHoursFunc, routesRequests, requestOverFiveHours, setRoutesRequestsFunc, isServerConnected } = useAppContext()
     const [selectedRoute, setSelectedRoute] = useState("Not Selected")
 
     const [methodsUsageThisWeek, setMethodsUsageThisWeek] = useState([])
     const [methodsContribution, setMethodsContribution] = useState([])
+
+    const [availableRoutes, setAvailableRoutes] = useState([])
 
     const fetchTrafficOverview = async () => {
         const { startTime, endTime } = getStartAndEndTime();
@@ -29,13 +31,19 @@ const Traffic = () => {
             })
             let response = await getData.json();
             let newData = []
-            response.data[0].trafficOverview.map((data, index) => {
-                // if ((response.data[0].trafficOverview.length) - 5 <= index) {
+            response.data[response.data.length - 1].trafficOverview.map((data, index) => {
+                if ((response.data[response.data.length - 1].trafficOverview.length) - 5 <= index) {
+                    newData = [
+                        ...newData,
+                        ...Object.entries(data.breakdown)
+                            .slice(0, 5) // Get the latest 5
+                            .map((detail) => ({
+                                minute: `${data.hour}:${detail[0] < 10 ? "0" + detail[0] : detail[0]} m`,
+                                requests: detail[1]
+                            }))
+                    ];
+                }
 
-                newData = [...newData, ...Object.entries(data.breakdown).map((detail) => ({
-                    minute: `${data.hour}:${detail[0] < 10 ? "0" + detail[0] : detail[0]} m`,
-                    requests: detail[1]
-                }))]
             })
             setRequestOverFiveHoursFunc(newData, "new")
         } catch (error) {
@@ -53,18 +61,22 @@ const Traffic = () => {
             })
             let data = await response.json()
             let methodsUsageThisWeek = data.data.map((info) => {
-                return { name: info.route, uv: info.totalRequests, value: info.totalRequests }
+                setAvailableRoutes((oldRoutes) => {
+                    return [...oldRoutes, ...info.routes]
+                })
+                return { name: info.mainRoute, uv: info.totalRequests, value: info.totalRequests }
             })
             setRoutesRequestsFunc(methodsUsageThisWeek, "new")
         } catch (err) {
+            console.log(err)
             Notification.error("Oops! cannot fetch routes traffic at this  moment")
         }
     }
 
     const getRouteDetail = async () => {
-        const { startTime, endTime } = getStartAndEndTime();
+        const { weekStarted, endTime } = getStartAndEndTime();
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/traffic/route?organizationID=${organization._id}&startTime=${startTime}&endTime=${endTime}&route=${selectedRoute}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/traffic/route?organizationID=${organization._id}&startTime=${weekStarted}&endTime=${endTime}&route=${selectedRoute}`, {
                 method: "GET",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" }
@@ -77,30 +89,35 @@ const Traffic = () => {
                 { name: "PUT", uv: data.totalPut, value: data.totalPut },
                 { name: "DELETE", uv: data.totalDelete, value: data.totalDelete }
             ])
-            let formattedMethodsUsageData = data.detailedData.map((routeData) => {
+            let formattedMethodsUsageData = data.dailyAggregate.map((aggregateData) => {
                 return {
-                    name: routeData.date,
-                    get: routeData.get,
-                    post: routeData.post,
-                    put: routeData.put,
-                    delete: routeData.delete
-                }
-            })
+                    name: aggregateData.date,
+                    get: aggregateData.metrics.get,
+                    post: aggregateData.metrics.post,
+                    put: aggregateData.metrics.put,
+                    delete: aggregateData.metrics.delete
+                };
+            });
             setMethodsUsageThisWeek(formattedMethodsUsageData)
         } catch (err) {
+            console.log(err)
             Notification.error("Oops! cannot fetch route detail at this moment")
         }
     }
 
 
     useEffect(() => {
-        getRouteDetail()
+        if (isServerConnected) {
+            getRouteDetail()
+        }
     }, [selectedRoute])
 
     useEffect(() => {
-        fetchTrafficOverview();
-        fetchRoutesTraffic();
-    }, [])
+        if (isServerConnected) {
+            fetchTrafficOverview();
+            fetchRoutesTraffic();
+        }
+    }, [isServerConnected])
 
 
     return (
@@ -131,12 +148,12 @@ const Traffic = () => {
             <Section cols={1} heading={`Detail Route Analysis (1 hour delay)`}>
                 <div style={{ display: "flex", alignItems: "center" }}>
                     <h6 style={{ marginRight: "10px" }}>Selected Route: </h6>
-                    <DropDown options={["users", "login", "register"]} selectedRoute={selectedRoute} handleSelectedOption={setSelectedRoute} />
+                    <DropDown options={availableRoutes} selectedRoute={selectedRoute} handleSelectedOption={setSelectedRoute} />
                 </div>
                 <SectionDiv heading={`CRUD Requests This Week`}>
                     <MultiBarChart data={methodsUsageThisWeek} />
                 </SectionDiv>
-                <SectionDiv heading={`CRUD Method Contribution Overall`}>
+                <SectionDiv heading={`CRUD Method Contribution Overall (This Week)`}>
                     <PieChart data={methodsContribution} />
                 </SectionDiv>
             </Section>

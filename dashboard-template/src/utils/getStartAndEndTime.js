@@ -10,7 +10,17 @@ function getStartAndEndTime() {
   const startTime = `${year}-${month}-${day}T00:00:00`;
   const endTime = `${year}-${month}-${day}T23:59:59`;
 
-  return { startTime: "2025-03-13T00:00:00", endTime: "2025-03-13T23:59:59" };
+  // Calculate weekStarted (7 days before today)
+  const weekStartDate = new Date(today);
+  weekStartDate.setDate(today.getDate() - 7);
+
+  const weekStartYear = weekStartDate.getFullYear();
+  const weekStartMonth = String(weekStartDate.getMonth() + 1).padStart(2, "0");
+  const weekStartDay = String(weekStartDate.getDate()).padStart(2, "0");
+
+  const weekStarted = `${weekStartYear}-${weekStartMonth}-${weekStartDay}T00:00:00`;
+
+  return { startTime, endTime, weekStarted };
 }
 
 export default getStartAndEndTime;

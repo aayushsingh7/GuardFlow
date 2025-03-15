@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { PieChart as Chart, Legend, Pie, Sector, Cell, ResponsiveContainer } from 'recharts';
+import NotEnoughDataWarning from '../NotEnoughDataWarning';
 
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
@@ -18,10 +19,9 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 const PieChart = ({ data }) => {
-    console.log("PieChart()", data)
     return (
         <ResponsiveContainer width="100%" height={400}>
-            <Chart style={{ fontSize: "14px" }} width="100%" height="100%">
+            {data.length == 0 ? <NotEnoughDataWarning /> : <Chart style={{ fontSize: "14px" }} width="100%" height="100%">
                 <Pie
                     data={data}
                     cx="50%"
@@ -37,7 +37,7 @@ const PieChart = ({ data }) => {
                     ))}
                 </Pie>
                 <Legend />
-            </Chart>
+            </Chart>}
         </ResponsiveContainer>
     );
 }

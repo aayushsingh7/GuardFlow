@@ -17,14 +17,15 @@ export const AppProvider = ({ children }) => {
 
   // Traffic Page
   const [requestOverFiveHours, setRequestOverFiveHours] = useState([]);
-  const [routesRequests, setRoutesRequests] = useState([{ name: "", uv: "", value: "" }]);
+  const [routesRequests, setRoutesRequests] = useState([]);
 
-  // const [curHourTraffic, setCurHourTraffic] = useState({});
+  const [isServerConnected, setIsServerConnected] = useState(false)
+  const [newReportsAvailable, setNewReportsAvailable] = useState(true)
 
   // organization
   const [organization, setOrganization] = useState({});
 
-  const [verify, setVerify] = useState(false);
+  const [verify, setVerify] = useState(true);
 
   const setRequestPerMinFunc = (data, type = "old") => {
     // console.log("setRequestPerMinFunc()", requestPerMin);
@@ -120,7 +121,7 @@ export const AppProvider = ({ children }) => {
     } else {
       setRoutesRequests((oldData) => {
         let newData = [...oldData];
-        console.log("setRoutesRequestsFunc()", data);
+        console.log("setRoutesRequestsFunc() receiving the data 1st time", data);
 
         for (let [route, methods] of Object.entries(data)) {
           let found = false;
@@ -157,21 +158,25 @@ export const AppProvider = ({ children }) => {
     <AppContext.Provider
       value={{
         verify,
-        setVerify,
         currHourTrafficData,
-        setCurrHourTrafficData,
         organization,
         requestPerMin,
         routesRequests,
-        setRequestPerMin,
         requestPerHour,
+        requestOverFiveHours,
+        isServerConnected,
+        newReportsAvailable,
+        setVerify,
+        setCurrHourTrafficData,
+        setRequestPerMin,
         setRequestPerHour,
         setOrganization,
         setRequestPerMinFunc,
         setRequestOverFiveHoursFunc,
         setRequestPerHourFunc,
-        requestOverFiveHours,
-        setRoutesRequestsFunc
+        setRoutesRequestsFunc,
+        setIsServerConnected,
+        setNewReportsAvailable
       }}
     >
       {children}

@@ -140,6 +140,10 @@ const __dirname = dirname(__filename);
 ```js
 const socket = io("http://localhost:4000/");
 
+socket.on("connect", () => {
+  socket.emit("main_server_connected");
+});
+
 socket.on("perform_scan", async () => {
   let scanResults = await runSnykTest();
   socket.emit("scan_results", JSON.parse(scanResults.output));
@@ -147,14 +151,26 @@ socket.on("perform_scan", async () => {
 
 // Middleware to track api requests
 app.use((req, res, next) => {
-  let pathComponents = req.url.slice(1).split("/");
-  socket.emit("req_received", {
-    pathComponents,
-    route: req.url,
-    method: req.method,
-    time: Date.now(),
-    requestIP: req.ip === "::1" ? "127.0.0.1" : req.ip,
-  });
+  let pathComponents = req.url
+    .slice(1)
+    .split("/")
+    .map((str) => {
+      let isParams = str.indexOf("?");
+      if (isParams == -1) {
+        return str;
+      } else {
+        return str.slice(0, isParams);
+      }
+    });
+  if (pathComponents[0] != "favicon.ico" && pathComponents[0] != "") {
+    socket.emit("req_received", {
+      pathComponents,
+      route: req.url,
+      method: req.method,
+      time: Date.now(),
+      requestIP: req.ip === "::1" ? "127.0.0.1" : req.ip,
+    });
+  }
   next();
 });
 ```
