@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
-import cloudinary from "cloudinary";
 import { Server } from "socket.io";
 import connectDB from "./database/connection.js";
 import apiRoutes from "./routes/apiTraffic.routes.js";
@@ -18,12 +17,6 @@ connectDB();
 const app = express();
 const reportService = new ReportService();
 const apiTrafficService = new ApiTrafficService();
-
-cloudinary.v2.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
